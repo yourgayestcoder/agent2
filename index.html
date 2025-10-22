@@ -135,16 +135,6 @@
   border-radius: 8px;
   cursor: pointer;
 }
-
-/* Onboarding form steps */
-.onboarding-step { display: none; flex-direction: column; gap: 12px; }
-.onboarding-step.active { display: flex; }
-.step-nav { display: flex; overflow-x: auto; gap: 6px; margin-bottom: 20px; }
-.step-nav button { flex: 0 0 auto; padding: 8px 14px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; opacity: 0.5; }
-.step-nav button.current { background: var(--accent); opacity: 1; color: white; }
-.step-nav button.completed { background: none; opacity: 1; color: var(--text); border: 1px solid var(--border); }
-
-/* Modal backdrop */
 .onboarding-modal-backdrop {
   display: none; /* caché par défaut */
   position: fixed;
@@ -155,7 +145,6 @@
   z-index: 1000;
 }
 
-/* Modal container */
 .onboarding-modal {
   width: 95%;
   max-width: 900px;
@@ -165,49 +154,31 @@
   overflow-y: auto;
   border: 1px solid rgba(255,255,255,0.12);
   padding: 20px;
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  font-family: VinciSans;
+  color: #fff;
 }
 
-/* Close button */
-.onboarding-close {
-  position: absolute;
-  top: 12px;
-  right: 18px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  color: white;
-  padding: 8px;
-  cursor: pointer;
-}
+.onboarding-close { position:absolute;top:12px;right:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;padding:8px;cursor:pointer; }
 
-/* Step navigation */
-.onboarding-step-nav {
-  display: flex;
-  overflow-x: auto;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
-.onboarding-step-nav button {
-  flex: 0 0 auto;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  opacity: 0.5;
-}
-
-.onboarding-step-nav button.current { background: #6f8cff; opacity:1; color:white; }
+.onboarding-step-nav { display:flex;overflow-x:auto;gap:6px;margin-bottom:20px; }
+.onboarding-step-nav button { flex:0 0 auto;padding:8px 14px;border-radius:8px;border:none;font-weight:700;cursor:pointer;opacity:0.5; }
+.onboarding-step-nav button.current { background:#6f8cff; opacity:1; color:white; }
 .onboarding-step-nav button.completed { background:none; opacity:1; color:white; border:1px solid rgba(255,255,255,0.12); }
 
-/* Steps */
 .onboarding-step { display: none; flex-direction: column; gap: 12px; }
 .onboarding-step.active { display: flex; }
+
+input, textarea, select, button { font-family: VinciSans; }
+input:focus, textarea:focus, select:focus, button:focus { outline:none; box-shadow:0 0 0px 6px #6f8cff29; }
+input:hover, textarea:hover, select:hover, button:hover { box-shadow:0 0 0px 6px #6f8cff29; }
+
+.radio-group, .share-options { display:flex; gap:12px; }
+.radio-group label, .share-options button { flex:1;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px; }
+.radio-group input[type=radio], .bold-radio input[type=checkbox] { display:none; }
+.radio-group input[type=radio]:checked + label, .bold-radio input[type=checkbox]:checked + label { background:#6f8cff;color:white; }
 
 
   </style>
@@ -226,7 +197,10 @@
 <!-- Bouton pour ouvrir le form -->
 <button class="btn" id="open-onboarding">Create your Agent</button>
 
-<!-- Modal popup (caché par défaut) -->
+<!-- Bouton pour ouvrir le form -->
+<button class="btn" id="open-onboarding">Create your Agent</button>
+
+<!-- Modal popup -->
 <div class="onboarding-modal-backdrop" id="onboarding-modal">
   <div class="onboarding-modal">
     <button class="onboarding-close" id="close-onboarding">✕</button>
@@ -242,92 +216,124 @@
     </div>
 
     <!-- Step 1: REGISTER -->
-    <div class="onboarding-step active">
-      <input type="text" placeholder="Ex: Clovis, Perceval, Lancelot" />
-      <input type="text" placeholder="Describe your agent" />
-      <input type="text" placeholder="Your company" />
-      <select>
+    <div class="onboarding-step active" id="step-register">
+      <input type="text" placeholder="Ex: Clovis, Perceval, Lancelot" id="agent-name"/>
+      <input type="text" placeholder="Describe your agent" id="agent-desc"/>
+      <input type="text" placeholder="Your company" id="company-name"/>
+      <select id="company-size">
         <option>Less than 3</option>
         <option>Less than 5</option>
         <option>Less than 10</option>
         <option>Less than 50</option>
         <option>50 and more</option>
       </select>
-      <select>
+      <select id="industry">
         <option>Retail</option>
         <option>Logistics</option>
+        <option>Healthcare</option>
+        <option>Education</option>
+        <!-- Ajouter toutes les industries comme avant -->
       </select>
-      <div class="onboarding-radio-group">
-        <input type="radio" id="theme-light" name="theme" checked />
-        <label for="theme-light">Light</label>
-        <input type="radio" id="theme-dark" name="theme" />
-        <label for="theme-dark">Dark</label>
-        <input type="radio" id="theme-fruit" name="theme" />
-        <label for="theme-fruit">Fruit</label>
+
+      <!-- More UI options toggle -->
+      <label class="bold-radio">
+        <input type="checkbox" id="more-ui-toggle"/>
+        More UI options
+      </label>
+
+      <div id="more-ui-options" style="display:none;">
+        <input type="color" id="primary-color" title="Primary color"/>
+        <input type="color" id="secondary-color" title="Secondary color"/>
+
+        <div class="radio-group">
+          <input type="radio" id="theme-light" name="theme" checked /><label for="theme-light">Light</label>
+          <input type="radio" id="theme-dark" name="theme" /><label for="theme-dark">Dark</label>
+          <input type="radio" id="theme-fruit" name="theme" /><label for="theme-fruit">Fruit</label>
+        </div>
       </div>
-      <button class="btn next-step">Next</button>
+
+      <div class="radio-group">
+        <input type="radio" id="lang-en" name="language" checked/><label for="lang-en">English</label>
+        <input type="radio" id="lang-fr" name="language"/><label for="lang-fr">Français</label>
+      </div>
+
+      <button class="btn next-step" id="register-next" disabled>Setting up agent</button>
     </div>
 
     <!-- Step 2: COLLECT -->
-    <div class="onboarding-step">
-      <p>Add your resources here (mockup)</p>
-      <button class="btn" disabled>Save Resources</button>
+    <div class="onboarding-step" id="step-collect">
+      <p>Start alimenting your agent with sources</p>
+      <div id="resources-list"></div>
+      <input type="text" placeholder="Resource name" id="resource-name"/>
+      <input type="url" placeholder="Resource URL" id="resource-url"/>
+      <select id="resource-class">
+        <option>Internal doc</option>
+        <option>Website page</option>
+        <option>Manufacturer notice</option>
+        <option>Company presentation</option>
+        <option>Commercial guideline</option>
+        <option>Other</option>
+      </select>
+      <button class="btn" id="add-resource">Add resource</button>
+      <button class="btn" id="save-resources" disabled>Save resources</button>
     </div>
 
     <!-- Step 3: INFERENCES -->
-    <div class="onboarding-step">
-      <textarea placeholder="Give guidelines"></textarea>
-      <input type="email" placeholder="Support email" />
-      <input type="tel" placeholder="Support phone" />
-      <input type="url" placeholder="Support website" />
-      <button class="btn" disabled>Share my agent</button>
+    <div class="onboarding-step" id="step-inferences">
+      <textarea placeholder="Give agent guidelines" id="guidelines"></textarea>
+      <input type="email" placeholder="Support email" id="support-email"/>
+      <input type="tel" placeholder="Support phone" id="support-phone"/>
+      <input type="url" placeholder="Support website" id="support-website"/>
+      <button class="btn" id="share-agent" disabled>Share my agent</button>
     </div>
 
     <!-- Step 4: SHARE -->
-    <div class="onboarding-step">
-      <p>Select who can use your agent</p>
-      <button class="btn">Internal use only</button>
-      <button class="btn">Customers B2C</button>
-      <button class="btn">Customers B2B</button>
-      <p>Select preferred channels</p>
-      <button class="btn">Hosted by Finn</button>
-      <button class="btn">Embed on your website</button>
-      <button class="btn" disabled>Continue to subscribe</button>
+    <div class="onboarding-step" id="step-share">
+      <p>Who can use your agent?</p>
+      <div class="share-options">
+        <button class="btn share-btn" data-group="user">Internal use only</button>
+        <button class="btn share-btn" data-group="user">Customers B2C</button>
+        <button class="btn share-btn" data-group="user">Customers B2B</button>
+      </div>
+      <p>Preferred channels</p>
+      <div class="share-options">
+        <button class="btn share-btn" data-group="channel">Hosted by Finn</button>
+        <button class="btn share-btn" data-group="channel">Embed on your website</button>
+      </div>
+      <button class="btn" id="continue-subscribe" disabled>Continue to subscribe</button>
     </div>
 
     <!-- Step 5: SUBSCRIBE -->
-    <div class="onboarding-step">
-      <p>Pick a plan (mockup)</p>
+    <div class="onboarding-step" id="step-subscribe">
+      <p>Pick a subscription plan (mockup)</p>
     </div>
-
   </div>
 </div>
 
+
 <script>
+// Modal open/close
 const modal = document.getElementById('onboarding-modal');
 const openBtn = document.getElementById('open-onboarding');
 const closeBtn = document.getElementById('close-onboarding');
 
-// Open modal
 openBtn.addEventListener('click', () => {
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 });
-
-// Close modal
 closeBtn.addEventListener('click', () => {
   modal.style.display = 'none';
   document.body.style.overflow = 'auto';
 });
 
-// Navigation steps
+// Step navigation
 const steps = document.querySelectorAll('.onboarding-step');
 const navButtons = document.querySelectorAll('.onboarding-step-nav button');
 
-steps.forEach((step,i) => {
+steps.forEach((step,i)=>{
   const nextBtn = step.querySelector('.next-step');
   if(nextBtn){
-    nextBtn.addEventListener('click', () => {
+    nextBtn.addEventListener('click',()=>{
       step.classList.remove('active');
       steps[i+1]?.classList.add('active');
       navButtons[i].classList.add('completed');
@@ -336,7 +342,35 @@ steps.forEach((step,i) => {
     });
   }
 });
+
+// REGISTER step validation
+const agentName = document.getElementById('agent-name');
+const registerNext = document.getElementById('register-next');
+
+agentName.addEventListener('input',()=>{
+  registerNext.disabled = !agentName.value.trim();
+});
+
+// Toggle More UI options
+const moreToggle = document.getElementById('more-ui-toggle');
+const moreOptions = document.getElementById('more-ui-options');
+moreToggle.addEventListener('change',()=>{moreOptions.style.display = moreToggle.checked ? 'block':'none';});
+
+// SHARE step validation
+const shareBtns = document.querySelectorAll('.share-btn');
+const continueSubscribe = document.getElementById('continue-subscribe');
+let shareSelections = {user:false, channel:false};
+shareBtns.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const group = btn.dataset.group;
+    shareSelections[group] = true;
+    btn.style.background='#6f8cff';
+    btn.style.color='white';
+    continueSubscribe.disabled = !(shareSelections.user && shareSelections.channel);
+  });
+});
 </script>
+
 
 
         </div>
@@ -398,13 +432,6 @@ steps.forEach((step,i) => {
       </div>
     </section>
 
-  </div>
-
-  <div class="modal-backdrop" id="modal">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Onboarding modal">
-      <button class="close" id="close-modal">✕</button>
-      <iframe class="frame" id="onboarding-frame" src="finn-agent-onboarding.html"></iframe>
-    </div>
   </div>
 
   <script>
