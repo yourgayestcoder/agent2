@@ -469,6 +469,38 @@
 
 
 
+<!-- SUBSCRIBE / PLANS -->
+<div class="step-panel" data-step="4" style="display:none;">
+  <h2>CHOOSE YOUR PLAN</h2>
+  <p style="color:rgba(255,255,255,0.7)">Select the subscription plan for your agent.</p>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+    <div class="plan-btn-modal" data-plan="standard" style="flex:1;padding:14px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;cursor:pointer;text-align:center;">
+      <h3>Standard</h3>
+      <p style="color:rgba(255,255,255,0.7)">Basic features for small teams</p>
+      <strong>$29/mo</strong>
+    </div>
+    <div class="plan-btn-modal" data-plan="pro" style="flex:1;padding:14px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;cursor:pointer;text-align:center;">
+      <h3>Pro</h3>
+      <p style="color:rgba(255,255,255,0.7)">Advanced features for growing teams</p>
+      <strong>$59/mo</strong>
+    </div>
+    <div class="plan-btn-modal" data-plan="enterprise" style="flex:1;padding:14px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;cursor:pointer;text-align:center;">
+      <h3>Enterprise</h3>
+      <p style="color:rgba(255,255,255,0.7)">Full features for large organizations</p>
+      <strong>Custom pricing</strong>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+    <button id="finish-modal" style="display:none;padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Finish</button>
+    <button id="back-to-share-modal" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Back</button>
+  </div>
+</div>
+
+
+
+
     </div>
   </div>
 </div>
@@ -760,6 +792,48 @@ function toggleSaveResBtnModal() {
     saveResBtnModal.style.display = 'none';
   }
 }
+
+// -------------------------
+// SUBSCRIBE / PLANS step
+// -------------------------
+const planButtonsModal = Array.from(document.querySelectorAll('.plan-btn-modal'));
+const finishBtnModal = document.getElementById('finish-modal');
+const backToShareModal = document.getElementById('back-to-share-modal');
+
+let selectedPlanModal = null;
+
+function updatePlanSelection() {
+  planButtonsModal.forEach(btn => {
+    if(btn.dataset.plan === selectedPlanModal){
+      btn.style.background = '#6f8cff';
+      btn.style.color = 'white';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'white';
+    }
+  });
+  finishBtnModal.style.display = selectedPlanModal ? 'inline-block' : 'none';
+}
+
+planButtonsModal.forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedPlanModal = (btn.dataset.plan === selectedPlanModal) ? null : btn.dataset.plan;
+    updatePlanSelection();
+  });
+});
+
+finishBtnModal.addEventListener('click', () => {
+  if(!selectedPlanModal) return alert('Please select a plan');
+  stateModal.completed.push(4);
+  alert(`Onboarding completed! You chose the ${selectedPlanModal} plan.`);
+  goToStep(0); 
+  stateModal.completed = [];
+  // reset selections if needed
+  selectedPlanModal = null;
+  updatePlanSelection();
+});
+
+backToShareModal.addEventListener('click', () => goToStep(3));
 
 
 </script>
