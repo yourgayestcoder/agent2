@@ -587,7 +587,7 @@ document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
   const resourcesModal = [];
 const resListModal = document.getElementById('resources_list_modal');
 const addResBtnModal = document.getElementById('add_res_modal'); // <== corriger l'id
-  const saveResBtnModal = document.getElementById('save_resources_modal');
+const saveResBtnModal = document.getElementById('save_res_modal'); // <-- correspond au HTML
 
   function toggleSaveResourceBtnModal(){
     if(resourcesModal.length>0) saveResBtnModal.classList.remove('hidden');
@@ -711,13 +711,14 @@ addResBtnModal.addEventListener('click', (e) => {
     goToStep(0); stateModal.completed=[];
   });
 
-  function toggleSaveResBtnModal() {
+function toggleSaveResBtnModal() {
   if (resourcesModal.length > 0) {
-    document.getElementById('save_res_modal').style.display = 'inline-block';
+    saveResBtnModal.style.display = 'inline-block';
   } else {
-    document.getElementById('save_res_modal').style.display = 'none';
+    saveResBtnModal.style.display = 'none';
   }
 }
+
 
 </script>
 
