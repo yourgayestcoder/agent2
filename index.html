@@ -257,9 +257,6 @@
 <!-- Button to open modal -->
 <button id="open-onboarding" class="btn">Create your Finn Agent</button>
 
-<!-- Bouton pour ouvrir le popup -->
-<button id="open-onboarding" style="padding:10px 14px;border-radius:10px;background:#6f8cff;color:white;font-weight:700;cursor:pointer;">Open Onboarding</button>
-
 <!-- Onboarding Modal -->
 <div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;overflow:auto;">
   <div style="width:95%;max-width:900px;background:#17110f;border-radius:12px;padding:20px;position:relative;color:white;">
@@ -370,85 +367,281 @@
           <button id="to-collect-modal" class="btn" style="display:none;background:#6f8cff;padding:10px 14px;border-radius:10px;color:white;font-weight:700;">Next →</button>
         </div>
       </div>
+
+
+
+      <!-- COLLECT -->
+<div class="step-panel" data-step="1" style="display:none;">
+  <h2>COLLECT</h2>
+  <p style="color:rgba(255,255,255,0.7)">Start adding sources (max 30).</p>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;">
+    <input id="res_name_modal" type="text" placeholder="Resource name" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+    <input id="res_url_modal" type="url" placeholder="https://..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+    <select id="res_class_modal" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+      <option>Internal doc</option>
+      <option>Website page</option>
+      <option>Manual</option>
+      <option>Presentation</option>
+      <option>Other</option>
+    </select>
+    <button id="add_res_modal" style="padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Add</button>
+  </div>
+  <div id="resources_list_modal" style="max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:6px;"></div>
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+    <button id="save_res_modal" style="display:none;padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Save Resources</button>
+    <button id="back-to-register-modal" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Back</button>
+  </div>
+</div>
+
+<!-- INFERENCES -->
+<div class="step-panel" data-step="2" style="display:none;">
+  <h2>INFERENCES</h2>
+  <p style="color:rgba(255,255,255,0.7)">Give guidelines to your agent about tone, limits, and behavior.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <div style="flex:1 1 100%">
+      <label>Guidelines</label>
+      <textarea id="guidelines_modal" placeholder="Example: Always ask clarifying questions..." style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;min-height:100px;"></textarea>
+    </div>
+    <div style="flex:1 1 48%">
+      <label>Support email</label>
+      <input id="support_email_modal" type="email" placeholder="support@company.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+    </div>
+    <div style="flex:1 1 48%">
+      <label>Support phone</label>
+      <input id="support_phone_modal" type="tel" placeholder="+33 6 12 34 56 78" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+    </div>
+    <div style="flex:1 1 100%">
+      <label>Support site (url)</label>
+      <input id="support_url_modal" type="url" placeholder="https://support.company.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+    <button id="to-share-modal" style="display:none;padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Next →</button>
+    <button id="back-to-collect-modal" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Back</button>
+  </div>
+</div>
+
+
+
+<!-- SHARE -->
+<div class="step-panel" data-step="3" style="display:none;">
+  <h2>SHARE</h2>
+  <p style="color:rgba(255,255,255,0.7)">Who can use your agent and preferred channels.</p>
+
+  <div style="margin-bottom:10px;">
+    <label>Who can use your agent</label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+      <button class="aud-btn-modal" data-audience="internal" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Internal</button>
+      <button class="aud-btn-modal" data-audience="b2c" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Customers B2C</button>
+      <button class="aud-btn-modal" data-audience="b2b" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Customers B2B</button>
+    </div>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label>Preferred channels</label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+      <button class="ch-btn-modal" data-channel="hosted" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Hosted</button>
+      <button class="ch-btn-modal" data-channel="embed" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Embed</button>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+    <button id="to-subscribe-modal" style="display:none;padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Next →</button>
+    <button id="back-to-infer-modal" style="padding:10px 14px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:white;cursor:pointer;">Back</button>
+  </div>
+</div>
+
+
+
     </div>
   </div>
 </div>
 
 <script>
-  // OPEN / CLOSE POPUP
+  // ---- POPUP OPEN / CLOSE ----
   const modal = document.getElementById('onboarding-modal');
   const openBtn = document.getElementById('open-onboarding');
   const closeBtn = document.getElementById('close-onboarding');
 
-  openBtn.addEventListener('click', ()=> modal.style.display='flex');
-  closeBtn.addEventListener('click', ()=> modal.style.display='none');
+  openBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+  closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
 
-  // Steps state
-  const steps = Array.from(document.querySelectorAll('#onboarding-content .step-panel'));
+  // ---- MULTI-STEP LOGIC ----
+  const stepsMeta = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE','TEST & DEPLOY'];
+  const topSteps = document.getElementById('top-steps');
+  const panels = Array.from(document.querySelectorAll('.step-panel'));
   let state = { current:0, completed:[] };
-  const topSteps = document.getElementById('top-steps-modal');
 
   function renderTop(){
     topSteps.innerHTML = '';
-    const names = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE'];
-    names.forEach((name,i)=>{
+    stepsMeta.forEach((s,i)=>{
       const btn = document.createElement('button');
-      btn.textContent = (i+1)+' · '+name;
-      btn.style.padding='6px 12px'; btn.style.borderRadius='999px'; btn.style.fontSize='13px';
-      btn.style.marginRight='8px'; btn.style.border='1px solid transparent'; btn.style.cursor='pointer';
-      if(i===state.current){ btn.style.background='#6f8cff'; btn.style.color='white'; }
-      else if(state.completed.includes(i)){ btn.style.background='transparent'; btn.style.color='white'; btn.style.opacity='0.8'; btn.style.border='1px solid rgba(255,255,255,0.2)'; }
-      else { btn.style.opacity='0.5'; btn.style.color='rgba(255,255,255,0.7)'; }
+      btn.className = 'step-btn ' + (i===state.current?'current':(state.completed.includes(i)?'past':'upcoming'));
+      btn.textContent = (i+1) + ' · ' + s;
       btn.addEventListener('click', ()=>{ if(i<=state.current || state.completed.includes(i)) goToStep(i); });
       topSteps.appendChild(btn);
     });
   }
 
   function showPanel(i){
-    steps.forEach(s=>s.style.display='none');
-    steps[i].style.display='block';
-    state.current=i;
-    renderTop();
+    panels.forEach(p=>p.style.display='none');
+    if(panels[i]) panels[i].style.display='block';
+    state.current=i; renderTop();
   }
+
   function goToStep(i){ showPanel(i); }
+
   renderTop(); showPanel(0);
 
-  // Agent name input logic
-  const agentInput = document.getElementById('agent_name_modal');
-  const nextBtn = document.getElementById('to-collect-modal');
+  // ---- REGISTER ----
+  const agentNameInput = document.getElementById('agent_name');
+  const toCollectBtn = document.getElementById('to-collect');
+  const previewName = document.getElementById('preview_name');
 
-  agentInput.addEventListener('input', e=>{
-    nextBtn.style.display = e.target.value.trim() ? 'inline-block':'none';
+  agentNameInput.addEventListener('input', e=>{
+    const v=e.target.value.trim();
+    previewName.textContent = v;
+    toCollectBtn.style.display = v?'inline-block':'none';
   });
 
-  nextBtn.addEventListener('click', ()=>{
-    state.completed.push(0);
-    goToStep(1); // Next step
+  toCollectBtn.addEventListener('click', ()=>{
+    state.completed.push(0); showPanel(1);
   });
 
   // More UI toggle
-  const moreUi = document.getElementById('more_ui_modal');
-  const branding = document.getElementById('branding_section_modal');
-  moreUi.addEventListener('change', ()=> branding.style.display = moreUi.checked?'flex':'none');
+  const moreUi = document.getElementById('more_ui');
+  const brandingSection = document.getElementById('branding_section');
+  moreUi.addEventListener('change', ()=>{
+    if(moreUi.checked) brandingSection.classList.remove('hidden'); 
+    else brandingSection.classList.add('hidden');
+  });
 
-  // Theme selection
-  document.querySelectorAll('input[name="theme_modal"]').forEach(r=>{
-    r.parentElement.addEventListener('click', ()=>{
-      document.querySelectorAll('input[name="theme_modal"]').forEach(i=>i.parentElement.style.boxShadow='none');
-      r.parentElement.style.boxShadow='0 0 0 3px #6f8cff';
-      r.checked=true;
+  // Color preview
+  const primary = document.getElementById('primary_color');
+  const primaryPreview = document.getElementById('primary_preview');
+  const secondary = document.getElementById('secondary_color');
+  const secondaryPreview = document.getElementById('secondary_preview');
+
+  function updatePreview(input, preview){
+    const v = input.value.trim();
+    try{ if(v.startsWith('#')&&(v.length===7||v.length===4)) preview.style.background=v; else preview.style.background='transparent'; }catch(e){ preview.style.background='transparent'; }
+  }
+  if(primary) primary.addEventListener('input', ()=>updatePreview(primary, primaryPreview));
+  if(secondary) secondary.addEventListener('input', ()=>updatePreview(secondary, secondaryPreview));
+
+  // Theme cards selection
+  document.querySelectorAll('.theme-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      card.querySelector('input').checked=true;
     });
   });
 
   // Language toggle
-  document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
+  document.querySelectorAll('.lang-toggle button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.lang-btn-modal').forEach(b=>b.style.background='transparent');
-      btn.style.background='#6f8cff';
+      document.querySelectorAll('.lang-toggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
     });
   });
-</script>
 
+  // ---- COLLECT ----
+  const resources = [];
+  const resList = document.getElementById('resources_list');
+  const addResBtn = document.getElementById('add_res');
+  const saveResBtn = document.getElementById('save_resources');
+
+  function toggleSaveResourceBtn(){ resources.length>0? saveResBtn.classList.remove('hidden') : saveResBtn.classList.add('hidden'); }
+
+  function renderResources(){
+    resList.innerHTML='';
+    resources.forEach((r,idx)=>{
+      const item = document.createElement('div');
+      item.className='res-item';
+      const fav = `https://www.google.com/s2/favicons?sz=64&domain=${(new URL(r.url)).hostname}`;
+      item.innerHTML=`<img src="${fav}" alt="favicon" onerror="this.style.opacity=0.2">
+        <div style="flex:1">
+          <div style="font-weight:700"><a href="${r.url}" target="_blank">${r.name}</a></div>
+          <div style="font-size:13px;color:var(--muted)">${r.url}</div>
+        </div>
+        <div class="cls">${r.class}</div>
+        <div><button data-idx="${idx}" class="btn ghost">Delete</button></div>`;
+      resList.appendChild(item);
+    });
+    Array.from(resList.querySelectorAll('button')).forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const i=Number(e.currentTarget.dataset.idx);
+        resources.splice(i,1); renderResources(); toggleSaveResourceBtn();
+      });
+    });
+    toggleSaveResourceBtn();
+  }
+
+  addResBtn.addEventListener('click', e=>{
+    e.preventDefault();
+    const name=document.getElementById('res_name').value.trim();
+    const url=document.getElementById('res_url').value.trim();
+    const cls=document.getElementById('res_class').value;
+    if(!name || !url) return alert('Provide name and url');
+    if(resources.length>=30) return alert('Max 30 resources');
+    try{ new URL(url); }catch(err){ return alert('Invalid URL'); }
+    resources.push({name,url,class:cls});
+    document.getElementById('res_name').value=''; document.getElementById('res_url').value='';
+    renderResources();
+  });
+
+  saveResBtn.addEventListener('click', ()=>{
+    if(resources.length===0) return alert('Add at least one resource');
+    localStorage.setItem('finn_resources', JSON.stringify(resources));
+    state.completed.push(1); showPanel(2);
+  });
+
+  // ---- INFERENCES ----
+  const guidelines = document.getElementById('guidelines');
+  const supportEmail = document.getElementById('support_email');
+  const supportPhone = document.getElementById('support_phone');
+  const supportUrl = document.getElementById('support_url');
+  const toShareBtn = document.getElementById('to-share');
+
+  function validateInfer(){
+    const g=guidelines.value.trim();
+    const e=supportEmail.value.trim();
+    const p=supportPhone.value.trim();
+    const u=supportUrl.value.trim();
+    (g && e && p && u)? toShareBtn.classList.remove('hidden') : toShareBtn.classList.add('hidden');
+  }
+
+  [guidelines, supportEmail, supportPhone, supportUrl].forEach(el=>el && el.addEventListener('input', validateInfer));
+  toShareBtn.addEventListener('click', ()=>{ state.completed.push(2); showPanel(3); });
+  document.getElementById('back-to-collect').addEventListener('click', ()=> showPanel(1));
+
+  // ---- SHARE ----
+  const audButtons = Array.from(document.querySelectorAll('.aud-btn'));
+  const chButtons = Array.from(document.querySelectorAll('.ch-btn'));
+  const toSubscribeBtn = document.getElementById('to-subscribe');
+  let selectedAudience=null, selectedChannel=null;
+
+  function updateShareState(){
+    audButtons.forEach(b=>b.classList.toggle('selected', b.dataset.audience===selectedAudience));
+    chButtons.forEach(b=>b.classList.toggle('selected', b.dataset.channel===selectedChannel));
+    (selectedAudience && selectedChannel)? toSubscribeBtn.classList.remove('hidden') : toSubscribeBtn.classList.add('hidden');
+  }
+
+  audButtons.forEach(b=>b.addEventListener('click', ()=>{ selectedAudience=(b.dataset.audience===selectedAudience? null : b.dataset.audience); updateShareState(); }));
+  chButtons.forEach(b=>b.addEventListener('click', ()=>{ selectedChannel=(b.dataset.channel===selectedChannel? null : b.dataset.channel); updateShareState(); }));
+
+  toSubscribeBtn.addEventListener('click', ()=>{ state.completed.push(3); showPanel(4); });
+  document.getElementById('back-to-infer').addEventListener('click', ()=> showPanel(2));
+
+  // ---- SUBSCRIBE ----
+  document.getElementById('finish').addEventListener('click', ()=>{
+    state.completed.push(4);
+    alert('Onboarding completed (demo). Next: Test & Deploy coming soon.');
+    showPanel(0); state.completed=[];
+    modal.style.display='none';
+  });
+</script>
 
 
 
