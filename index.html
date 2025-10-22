@@ -240,6 +240,17 @@
       .step-btn{padding:8px 10px}
     }
 
+.selected {
+  border-color: #6f8cff;
+  background: rgba(111,140,255,0.1);
+}
+
+.lang-btn-modal.active {
+  background: #6f8cff;
+  color: white;
+}
+
+
   </style>
 </head>
 <body>
@@ -535,13 +546,33 @@
   primaryColorModal.addEventListener('input', ()=>updatePreview(primaryColorModal, primaryPreviewModal));
   secondaryColorModal.addEventListener('input', ()=>updatePreview(secondaryColorModal, secondaryPreviewModal));
 
-  // Language toggle
-  document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.lang-btn-modal').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-    });
+  // -------------------------
+// REGISTER step: Theme selection
+// -------------------------
+const themeLabels = Array.from(document.querySelectorAll('[name="theme_modal"]')).map(radio => radio.parentElement);
+
+themeLabels.forEach(label=>{
+  label.addEventListener('click', ()=>{
+    // décocher tous les radios
+    themeLabels.forEach(l=> l.classList.remove('selected'));
+    const radio = label.querySelector('input[type="radio"]');
+    radio.checked = true;
+    label.classList.add('selected');
   });
+});
+
+// ajouter un style visuel pour sélection
+themeLabels.forEach(l=>{
+  if(l.querySelector('input[type="radio"]').checked) l.classList.add('selected');
+});
+
+  // Language toggle
+document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.lang-btn-modal').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
 
   // Next → COLLECT
   toCollectModal.addEventListener('click', ()=>{
@@ -554,7 +585,7 @@
   // -------------------------
   const resourcesModal = [];
   const resListModal = document.getElementById('resources_list');
-  const addResBtnModal = document.getElementById('add_res');
+const addResBtnModal = document.getElementById('add_res_modal'); // <== corriger l'id
   const saveResBtnModal = document.getElementById('save_resources');
 
   function toggleSaveResourceBtnModal(){
