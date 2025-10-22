@@ -681,34 +681,68 @@ toShareBtnModal.addEventListener('click', () => {
 backToCollectModal.addEventListener('click', () => goToStep(1));
 
 
-  // -------------------------
-  // SHARE step
-  // -------------------------
-  const audButtonsModal = Array.from(document.querySelectorAll('.aud-btn'));
-  const chButtonsModal = Array.from(document.querySelectorAll('.ch-btn'));
-  const toSubscribeBtnModal = document.getElementById('to-subscribe');
+// -------------------------
+// SHARE step
+// -------------------------
+const audButtonsModal = Array.from(document.querySelectorAll('.aud-btn-modal'));
+const chButtonsModal = Array.from(document.querySelectorAll('.ch-btn-modal'));
+const toSubscribeBtnModal = document.getElementById('to-subscribe-modal');
+const backToInferModal = document.getElementById('back-to-infer-modal');
 
-  let selectedAudienceModal = null;
-  let selectedChannelModal = null;
+let selectedAudienceModal = null;
+let selectedChannelModal = null;
 
-  function updateShareStateModal(){
-    audButtonsModal.forEach(b=> b.classList.toggle('selected', b.dataset.audience===selectedAudienceModal));
-    chButtonsModal.forEach(b=> b.classList.toggle('selected', b.dataset.channel===selectedChannelModal));
-    toSubscribeBtnModal.classList.toggle('hidden', !(selectedAudienceModal && selectedChannelModal));
-  }
+function updateShareStateModal() {
+  // visuel sélection
+  audButtonsModal.forEach(b => {
+    if(b.dataset.audience === selectedAudienceModal){
+      b.style.background = '#6f8cff';
+      b.style.color = 'white';
+    } else {
+      b.style.background = 'transparent';
+      b.style.color = 'white';
+    }
+  });
 
-  audButtonsModal.forEach(b=> b.addEventListener('click', ()=>{
-    selectedAudienceModal = b.dataset.audience===selectedAudienceModal? null : b.dataset.audience;
+  chButtonsModal.forEach(b => {
+    if(b.dataset.channel === selectedChannelModal){
+      b.style.background = '#6f8cff';
+      b.style.color = 'white';
+    } else {
+      b.style.background = 'transparent';
+      b.style.color = 'white';
+    }
+  });
+
+  // bouton Next → visible si les deux choix sont faits
+  toSubscribeBtnModal.style.display = (selectedAudienceModal && selectedChannelModal) ? 'inline-block' : 'none';
+}
+
+// sélection audience
+audButtonsModal.forEach(b => {
+  b.addEventListener('click', () => {
+    selectedAudienceModal = (b.dataset.audience === selectedAudienceModal) ? null : b.dataset.audience;
     updateShareStateModal();
-  }));
+  });
+});
 
-  chButtonsModal.forEach(b=> b.addEventListener('click', ()=>{
-    selectedChannelModal = b.dataset.channel===selectedChannelModal? null : b.dataset.channel;
+// sélection channel
+chButtonsModal.forEach(b => {
+  b.addEventListener('click', () => {
+    selectedChannelModal = (b.dataset.channel === selectedChannelModal) ? null : b.dataset.channel;
     updateShareStateModal();
-  }));
+  });
+});
 
-  toSubscribeBtnModal.addEventListener('click', ()=>{ stateModal.completed.push(3); goToStep(4); });
-  document.getElementById('back-to-infer').addEventListener('click', ()=> goToStep(2));
+// Next → SUBSCRIBE
+toSubscribeBtnModal.addEventListener('click', () => {
+  stateModal.completed.push(3);
+  goToStep(4);
+});
+
+// Back → INFERENCES
+backToInferModal.addEventListener('click', () => goToStep(2));
+
 
   // -------------------------
   // SUBSCRIBE step
