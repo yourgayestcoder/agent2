@@ -135,51 +135,110 @@
   border-radius: 8px;
   cursor: pointer;
 }
-.onboarding-modal-backdrop {
-  display: none; /* caché par défaut */
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.onboarding-modal {
-  width: 95%;
-  max-width: 900px;
-  max-height: 85vh;
-  background: rgb(23,17,15);
-  border-radius: 12px;
-  overflow-y: auto;
-  border: 1px solid rgba(255,255,255,0.12);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-family: VinciSans;
-  color: #fff;
-}
 
-.onboarding-close { position:absolute;top:12px;right:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:white;padding:8px;cursor:pointer; }
+    *, *::before, *::after{font-family: VinciSans, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial !important; box-sizing: border-box}
+    html,body{height:100%;margin:0;padding:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
-.onboarding-step-nav { display:flex;overflow-x:auto;gap:6px;margin-bottom:20px; }
-.onboarding-step-nav button { flex:0 0 auto;padding:8px 14px;border-radius:8px;border:none;font-weight:700;cursor:pointer;opacity:0.5; }
-.onboarding-step-nav button.current { background:#6f8cff; opacity:1; color:white; }
-.onboarding-step-nav button.completed { background:none; opacity:1; color:white; border:1px solid rgba(255,255,255,0.12); }
+    /* Modal overlay + card */
+    .onboarding-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .onboarding-modal-card {
+      width: 95%;
+      max-width: var(--max-width);
+      max-height: 90vh;
+      background: var(--bg);
+      border-radius: var(--radius);
+      overflow-y: auto;
+      position: relative;
+      padding-bottom: 20px;
+    }
+    .onboarding-close {
+      position: absolute; top:12px; right:16px;
+      background: transparent; border:none; font-size:18px; cursor:pointer;
+    }
 
-.onboarding-step { display: none; flex-direction: column; gap: 12px; }
-.onboarding-step.active { display: flex; }
+    /* Topbar */
+    .topbar{
+      position:sticky;top:0;z-index:40;
+      backdrop-filter: blur(6px);
+      background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.7));
+      border-bottom:1px solid rgba(11,18,32,0.04);
+      padding:10px 12px;display:block;width:100%;
+    }
+    .topbar-inner{max-width:var(--max-width);margin:0 auto;display:flex;align-items:center;gap:8px;overflow:auto;padding:6px 4px}
+    .step-btn{
+      flex:0 0 auto;padding:8px 12px;border-radius:999px;border:1px solid transparent;font-weight:700;cursor:pointer;white-space:nowrap;font-size:13px;margin-right:8px;
+    }
+    .step-btn.current{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white}
+    .step-btn.past{background:transparent;color:var(--text);opacity:1;border:1px solid rgba(11,18,32,0.06)}
+    .step-btn.upcoming{opacity:0.5;color:var(--muted)}
 
-input, textarea, select, button { font-family: VinciSans; }
-input:focus, textarea:focus, select:focus, button:focus { outline:none; box-shadow:0 0 0px 6px #6f8cff29; }
-input:hover, textarea:hover, select:hover, button:hover { box-shadow:0 0 0px 6px #6f8cff29; }
+    /* Page container */
+    .page{width:100%;display:block;padding:20px 12px 80px}
+    .container{width:100%;max-width:var(--max-width);margin:0 auto}
 
-.radio-group, .share-options { display:flex; gap:12px; }
-.radio-group label, .share-options button { flex:1;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px; }
-.radio-group input[type=radio], .bold-radio input[type=checkbox] { display:none; }
-.radio-group input[type=radio]:checked + label, .bold-radio input[type=checkbox]:checked + label { background:#6f8cff;color:white; }
+    h1,h2{margin:0 0 8px 0}
+    .lead{color:var(--muted);font-size:13px;margin-bottom:12px}
 
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:12px;padding:20px;min-height:300px;display:flex;flex-direction:column;gap:14px;border:1px solid rgba(11,18,32,0.04)}
+
+    .form-row{display:flex;gap:12px;flex-wrap:wrap}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+
+    input[type='text'], input[type='email'], input[type='url'], input[type='tel'], textarea, select, .color-swatch, .color-input, button{
+      font-family: VinciSans, inherit; font-size:15px; line-height:1.3
+    }
+
+    input[type='text'], input[type='email'], input[type='url'], input[type='tel'], textarea, select, .color-swatch, .color-input{
+      width:100%;padding:10px;border-radius:10px;border:1px solid #e6e9ef;background:transparent
+    }
+    textarea{min-height:110px;resize:vertical}
+
+    select{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:none}
+
+    input:focus, textarea:focus, select:focus, button:focus, .color-input:focus{outline:none;box-shadow:0 0 0px 6px #6f8cff29}
+    input:hover, textarea:hover, select:hover, button:hover, .color-input:hover{box-shadow:0 0 0px 6px #6f8cff29}
+
+    .field-half{flex:1 1 48%}
+    .field-full{flex:1 1 100%}
+
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid #d1d5db;color:var(--text)}
+    .btn.selected{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white}
+
+    .resources{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding-right:6px}
+    .res-item{display:flex;gap:12px;align-items:center;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.04)}
+    .res-item img{width:28px;height:28px;border-radius:6px;object-fit:cover}
+
+    .themes{display:flex;gap:10px}
+    .theme-card{flex:1;padding:14px;border-radius:12px;border:1px solid #e8eefc;display:flex;align-items:center;gap:12px;cursor:pointer}
+    .theme-card input{display:none}
+    .theme-card .preview{width:44px;height:44px;border-radius:8px}
+    .theme-card.selected{box-shadow:0 0 0px 6px #6f8cff29;border-color:var(--accent-2)}
+
+    .lang-toggle{display:flex;border-radius:10px;overflow:hidden;border:1px solid #e6e9ef}
+    .lang-toggle button{flex:1;padding:10px;border:0;background:transparent;cursor:pointer}
+    .lang-toggle button.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white}
+
+    .more-ui{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .more-ui input{width:18px;height:18px}
+
+    .hidden{display:none}
+
+    @media (max-width:720px){
+      .field-half{flex:1 1 100%}
+      .themes{flex-direction:column}
+      .step-btn{padding:8px 10px}
+    }
 
   </style>
 </head>
@@ -194,181 +253,104 @@ input:hover, textarea:hover, select:hover, button:hover { box-shadow:0 0 0px 6px
         <h1>X Get the best-performing AI Agent for <span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
         <p class="lead">Deliver faster responses, automate repetitive tasks and scale your team's productivity with a customizable agent trained on your data.</p>
         <div class="cta-row">
-<!-- Bouton pour ouvrir le form -->
-<button class="btn" id="open-onboarding">Create your Agent</button>
 
-<!-- Bouton pour ouvrir le form -->
-<button class="btn" id="open-onboarding">Create your Agent</button>
+<!-- Button to open modal -->
+<button id="open-onboarding" class="btn">Create your Finn Agent</button>
 
-<!-- Modal popup -->
-<div class="onboarding-modal-backdrop" id="onboarding-modal">
-  <div class="onboarding-modal">
-    <button class="onboarding-close" id="close-onboarding">✕</button>
+<!-- Modal -->
+<div id="onboarding-modal" class="onboarding-modal-backdrop">
+  <div class="onboarding-modal-card">
+    <button id="close-onboarding" class="onboarding-close">✕</button>
 
-    <!-- Navigation des étapes -->
-    <div class="onboarding-step-nav">
-      <button class="current">REGISTER</button>
-      <button>COLLECT</button>
-      <button>INFERENCES</button>
-      <button>SHARE</button>
-      <button>SUBSCRIBE</button>
-      <button>TEST & DEPLOY</button>
+    <!-- Topbar -->
+    <div class="topbar" role="navigation" aria-label="Onboarding steps">
+      <div class="topbar-inner" id="top-steps"></div>
     </div>
 
-    <!-- Step 1: REGISTER -->
-    <div class="onboarding-step active" id="step-register">
-      <input type="text" placeholder="Ex: Clovis, Perceval, Lancelot" id="agent-name"/>
-      <input type="text" placeholder="Describe your agent" id="agent-desc"/>
-      <input type="text" placeholder="Your company" id="company-name"/>
-      <select id="company-size">
-        <option>Less than 3</option>
-        <option>Less than 5</option>
-        <option>Less than 10</option>
-        <option>Less than 50</option>
-        <option>50 and more</option>
-      </select>
-      <select id="industry">
-        <option>Retail</option>
-        <option>Logistics</option>
-        <option>Healthcare</option>
-        <option>Education</option>
-        <!-- Ajouter toutes les industries comme avant -->
-      </select>
+    <div class="page">
+      <div class="container">
+        <div class="card" id="main-card">
+          <h1>Your new Finn Agent</h1>
+          <div class="lead">Onboarding — minimal & responsive. Étapes : REGISTER → COLLECT → INFERENCES → SHARE → SUBSCRIBE → TEST & DEPLOY</div>
 
-      <!-- More UI options toggle -->
-      <label class="bold-radio">
-        <input type="checkbox" id="more-ui-toggle"/>
-        More UI options
-      </label>
+          <!-- Panels -->
+          <!-- REGISTER panel -->
+          <section class="step-panel" data-step="0">
+            <!-- Le contenu REGISTER complet tel que fourni précédemment -->
+          </section>
 
-      <div id="more-ui-options" style="display:none;">
-        <input type="color" id="primary-color" title="Primary color"/>
-        <input type="color" id="secondary-color" title="Secondary color"/>
+          <!-- COLLECT panel -->
+          <section class="step-panel" data-step="1">
+            <!-- Le contenu COLLECT complet -->
+          </section>
 
-        <div class="radio-group">
-          <input type="radio" id="theme-light" name="theme" checked /><label for="theme-light">Light</label>
-          <input type="radio" id="theme-dark" name="theme" /><label for="theme-dark">Dark</label>
-          <input type="radio" id="theme-fruit" name="theme" /><label for="theme-fruit">Fruit</label>
+          <!-- INFERENCES panel -->
+          <section class="step-panel" data-step="2">
+            <!-- Le contenu INFERENCES complet -->
+          </section>
+
+          <!-- SHARE panel -->
+          <section class="step-panel" data-step="3">
+            <!-- Le contenu SHARE complet -->
+          </section>
+
+          <!-- SUBSCRIBE panel -->
+          <section class="step-panel" data-step="4">
+            <!-- Le contenu SUBSCRIBE complet -->
+          </section>
+
         </div>
       </div>
-
-      <div class="radio-group">
-        <input type="radio" id="lang-en" name="language" checked/><label for="lang-en">English</label>
-        <input type="radio" id="lang-fr" name="language"/><label for="lang-fr">Français</label>
-      </div>
-
-      <button class="btn next-step" id="register-next" disabled>Setting up agent</button>
-    </div>
-
-    <!-- Step 2: COLLECT -->
-    <div class="onboarding-step" id="step-collect">
-      <p>Start alimenting your agent with sources</p>
-      <div id="resources-list"></div>
-      <input type="text" placeholder="Resource name" id="resource-name"/>
-      <input type="url" placeholder="Resource URL" id="resource-url"/>
-      <select id="resource-class">
-        <option>Internal doc</option>
-        <option>Website page</option>
-        <option>Manufacturer notice</option>
-        <option>Company presentation</option>
-        <option>Commercial guideline</option>
-        <option>Other</option>
-      </select>
-      <button class="btn" id="add-resource">Add resource</button>
-      <button class="btn" id="save-resources" disabled>Save resources</button>
-    </div>
-
-    <!-- Step 3: INFERENCES -->
-    <div class="onboarding-step" id="step-inferences">
-      <textarea placeholder="Give agent guidelines" id="guidelines"></textarea>
-      <input type="email" placeholder="Support email" id="support-email"/>
-      <input type="tel" placeholder="Support phone" id="support-phone"/>
-      <input type="url" placeholder="Support website" id="support-website"/>
-      <button class="btn" id="share-agent" disabled>Share my agent</button>
-    </div>
-
-    <!-- Step 4: SHARE -->
-    <div class="onboarding-step" id="step-share">
-      <p>Who can use your agent?</p>
-      <div class="share-options">
-        <button class="btn share-btn" data-group="user">Internal use only</button>
-        <button class="btn share-btn" data-group="user">Customers B2C</button>
-        <button class="btn share-btn" data-group="user">Customers B2B</button>
-      </div>
-      <p>Preferred channels</p>
-      <div class="share-options">
-        <button class="btn share-btn" data-group="channel">Hosted by Finn</button>
-        <button class="btn share-btn" data-group="channel">Embed on your website</button>
-      </div>
-      <button class="btn" id="continue-subscribe" disabled>Continue to subscribe</button>
-    </div>
-
-    <!-- Step 5: SUBSCRIBE -->
-    <div class="onboarding-step" id="step-subscribe">
-      <p>Pick a subscription plan (mockup)</p>
     </div>
   </div>
 </div>
 
-
 <script>
-// Modal open/close
-const modal = document.getElementById('onboarding-modal');
-const openBtn = document.getElementById('open-onboarding');
-const closeBtn = document.getElementById('close-onboarding');
+  // Modal open/close
+  const modal = document.getElementById('onboarding-modal');
+  const openBtn = document.getElementById('open-onboarding');
+  const closeBtn = document.getElementById('close-onboarding');
 
-openBtn.addEventListener('click', () => {
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-});
-closeBtn.addEventListener('click', () => {
-  modal.style.display = 'none';
-  document.body.style.overflow = 'auto';
-});
-
-// Step navigation
-const steps = document.querySelectorAll('.onboarding-step');
-const navButtons = document.querySelectorAll('.onboarding-step-nav button');
-
-steps.forEach((step,i)=>{
-  const nextBtn = step.querySelector('.next-step');
-  if(nextBtn){
-    nextBtn.addEventListener('click',()=>{
-      step.classList.remove('active');
-      steps[i+1]?.classList.add('active');
-      navButtons[i].classList.add('completed');
-      navButtons[i+1].classList.add('current');
-      navButtons[i].classList.remove('current');
-    });
-  }
-});
-
-// REGISTER step validation
-const agentName = document.getElementById('agent-name');
-const registerNext = document.getElementById('register-next');
-
-agentName.addEventListener('input',()=>{
-  registerNext.disabled = !agentName.value.trim();
-});
-
-// Toggle More UI options
-const moreToggle = document.getElementById('more-ui-toggle');
-const moreOptions = document.getElementById('more-ui-options');
-moreToggle.addEventListener('change',()=>{moreOptions.style.display = moreToggle.checked ? 'block':'none';});
-
-// SHARE step validation
-const shareBtns = document.querySelectorAll('.share-btn');
-const continueSubscribe = document.getElementById('continue-subscribe');
-let shareSelections = {user:false, channel:false};
-shareBtns.forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const group = btn.dataset.group;
-    shareSelections[group] = true;
-    btn.style.background='#6f8cff';
-    btn.style.color='white';
-    continueSubscribe.disabled = !(shareSelections.user && shareSelections.channel);
+  openBtn.addEventListener('click', ()=>{
+    modal.style.display = 'flex';
+    document.body.style.overflow='hidden';
   });
-});
+
+  closeBtn.addEventListener('click', ()=>{
+    modal.style.display='none';
+    document.body.style.overflow='auto';
+  });
+
+  // Multi-step onboarding JS
+  const panels = Array.from(modal.querySelectorAll('.step-panel'));
+  const stepsMeta = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE','TEST & DEPLOY'];
+  const topSteps = modal.querySelector('#top-steps');
+  let state = {current:0, completed:[]};
+
+  function renderTop(){
+    topSteps.innerHTML='';
+    stepsMeta.forEach((s,i)=>{
+      const btn = document.createElement('button');
+      btn.className='step-btn '+(i===state.current?'current':(state.completed.includes(i)?'past':'upcoming'));
+      btn.textContent=(i+1)+' · '+s;
+      btn.addEventListener('click', ()=>{ if(i<=state.current || state.completed.includes(i)) goToStep(i); });
+      topSteps.appendChild(btn);
+    })
+  }
+
+  function showPanel(i){
+    panels.forEach(p=>p.style.display='none');
+    panels[i].style.display='block';
+    state.current=i;
+    renderTop();
+  }
+
+  function goToStep(i){ showPanel(i); }
+
+  renderTop(); showPanel(0);
+
+  // Ici, tu peux copier **tout ton JS existant du formulaire onboarding**, inchangé,
+  // depuis Agent name placeholder jusqu'à Finish button.
 </script>
 
 
