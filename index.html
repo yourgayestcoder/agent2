@@ -257,48 +257,117 @@
 <!-- Button to open modal -->
 <button id="open-onboarding" class="btn">Create your Finn Agent</button>
 
-<!-- Modal -->
-<div id="onboarding-modal" class="onboarding-modal-backdrop">
-  <div class="onboarding-modal-card">
-    <button id="close-onboarding" class="onboarding-close">✕</button>
+<!-- Bouton pour ouvrir le popup -->
+<button id="open-onboarding" style="padding:10px 14px;border-radius:10px;background:#6f8cff;color:white;font-weight:700;cursor:pointer;">Open Onboarding</button>
 
-    <!-- Topbar -->
-    <div class="topbar" role="navigation" aria-label="Onboarding steps">
-      <div class="topbar-inner" id="top-steps"></div>
+<!-- Onboarding Modal -->
+<div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;overflow:auto;">
+  <div style="width:95%;max-width:900px;background:#17110f;border-radius:12px;padding:20px;position:relative;color:white;">
+    <button id="close-onboarding" style="position:absolute;right:16px;top:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.2);padding:8px;border-radius:8px;color:white;cursor:pointer;">✕</button>
+
+    <!-- Top sticky steps bar -->
+    <div style="position:sticky;top:0;z-index:50;background:rgba(23,17,15,0.95);backdrop-filter:blur(6px);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.1);display:block;">
+      <div id="top-steps-modal" style="display:flex;gap:8px;overflow:auto;"></div>
     </div>
 
-    <div class="page">
-      <div class="container">
-        <div class="card" id="main-card">
-          <h1>Your new Finn Agent</h1>
-          <div class="lead">Onboarding — minimal & responsive. Étapes : REGISTER → COLLECT → INFERENCES → SHARE → SUBSCRIBE → TEST & DEPLOY</div>
+    <!-- Form container -->
+    <div id="onboarding-content" style="padding-top:12px;">
+      <!-- REGISTER -->
+      <div class="step-panel" data-step="0">
+        <h2>REGISTER</h2>
+        <p style="color:rgba(255,255,255,0.7)">Name and brand your agent.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+          <div style="flex:1 1 48%">
+            <label>Agent name</label>
+            <input id="agent_name_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+          </div>
+          <div style="flex:1 1 48%">
+            <label>Your company</label>
+            <input id="company_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+          </div>
+          <div style="flex:1 1 100%">
+            <label>Describe your agent</label>
+            <input id="agent_desc_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+          </div>
+          <div style="flex:1 1 48%">
+            <label>Company size</label>
+            <select id="company_size_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+              <option>Less than 3</option>
+              <option>Less than 5</option>
+              <option>Less than 10</option>
+              <option>Less than 50</option>
+              <option>50 and more</option>
+            </select>
+          </div>
+          <div style="flex:1 1 48%">
+            <label>Industry</label>
+            <select id="industry_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+              <option>Retail</option>
+              <option>Logistics</option>
+              <option>Healthcare</option>
+              <option>Education</option>
+              <option>Hospitality</option>
+              <option>Finance</option>
+              <option>Technology</option>
+              <option>Manufacturing</option>
+              <option>Other</option>
+            </select>
+          </div>
 
-          <!-- Panels -->
-          <!-- REGISTER panel -->
-          <section class="step-panel" data-step="0">
-            <!-- Le contenu REGISTER complet tel que fourni précédemment -->
-          </section>
+          <div style="flex:1 1 100%;display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <input type="checkbox" id="more_ui_modal" style="width:20px;height:20px;">
+            <label for="more_ui_modal">More UI options</label>
+          </div>
 
-          <!-- COLLECT panel -->
-          <section class="step-panel" data-step="1">
-            <!-- Le contenu COLLECT complet -->
-          </section>
+          <!-- Branding & theme hidden -->
+          <div id="branding_section_modal" style="display:none;flex-direction:column;gap:12px;width:100%;margin-top:12px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="flex:0 0 72%">
+                <label>Primary color</label>
+                <input id="primary_color_modal" type="text" placeholder="#0ea5a4" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:transparent;color:white;">
+              </div>
+              <div style="flex:0 0 28%">
+                <div id="primary_preview_modal" style="height:44px;border-radius:8px;border:1px solid #e6e9ef;"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="flex:0 0 72%">
+                <label>Secondary color</label>
+                <input id="secondary_color_modal" type="text" placeholder="#6366f1" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:transparent;color:white;">
+              </div>
+              <div style="flex:0 0 28%">
+                <div id="secondary_preview_modal" style="height:44px;border-radius:8px;border:1px solid #e6e9ef;"></div>
+              </div>
+            </div>
+            <div>
+              <label>Theme</label>
+              <div style="display:flex;gap:10px;margin-top:4px;">
+                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                  <input type="radio" name="theme_modal" value="light" checked style="display:none;">Light
+                </label>
+                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                  <input type="radio" name="theme_modal" value="dark" style="display:none;">Dark
+                </label>
+                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                  <input type="radio" name="theme_modal" value="fruit" style="display:none;">Fruit
+                </label>
+              </div>
+            </div>
+          </div>
 
-          <!-- INFERENCES panel -->
-          <section class="step-panel" data-step="2">
-            <!-- Le contenu INFERENCES complet -->
-          </section>
+          <!-- Language -->
+          <div style="flex:1 1 100%;margin-top:6px;">
+            <label>Agent language</label>
+            <div style="display:flex;border:1px solid #e6e9ef;border-radius:10px;overflow:hidden;">
+              <button data-lang="en" class="lang-btn-modal" style="flex:1;padding:10px;background:transparent;color:white;border:0;">English</button>
+              <button data-lang="fr" class="lang-btn-modal" style="flex:1;padding:10px;background:transparent;color:white;border:0;">Français</button>
+            </div>
+          </div>
 
-          <!-- SHARE panel -->
-          <section class="step-panel" data-step="3">
-            <!-- Le contenu SHARE complet -->
-          </section>
+        </div>
 
-          <!-- SUBSCRIBE panel -->
-          <section class="step-panel" data-step="4">
-            <!-- Le contenu SUBSCRIBE complet -->
-          </section>
-
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button id="to-collect-modal" class="btn" style="display:none;background:#6f8cff;padding:10px 14px;border-radius:10px;color:white;font-weight:700;">Next →</button>
         </div>
       </div>
     </div>
@@ -306,52 +375,80 @@
 </div>
 
 <script>
-  // Modal open/close
+  // OPEN / CLOSE POPUP
   const modal = document.getElementById('onboarding-modal');
   const openBtn = document.getElementById('open-onboarding');
   const closeBtn = document.getElementById('close-onboarding');
 
-  openBtn.addEventListener('click', ()=>{
-    modal.style.display = 'flex';
-    document.body.style.overflow='hidden';
-  });
+  openBtn.addEventListener('click', ()=> modal.style.display='flex');
+  closeBtn.addEventListener('click', ()=> modal.style.display='none');
 
-  closeBtn.addEventListener('click', ()=>{
-    modal.style.display='none';
-    document.body.style.overflow='auto';
-  });
-
-  // Multi-step onboarding JS
-  const panels = Array.from(modal.querySelectorAll('.step-panel'));
-  const stepsMeta = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE','TEST & DEPLOY'];
-  const topSteps = modal.querySelector('#top-steps');
-  let state = {current:0, completed:[]};
+  // Steps state
+  const steps = Array.from(document.querySelectorAll('#onboarding-content .step-panel'));
+  let state = { current:0, completed:[] };
+  const topSteps = document.getElementById('top-steps-modal');
 
   function renderTop(){
-    topSteps.innerHTML='';
-    stepsMeta.forEach((s,i)=>{
+    topSteps.innerHTML = '';
+    const names = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE'];
+    names.forEach((name,i)=>{
       const btn = document.createElement('button');
-      btn.className='step-btn '+(i===state.current?'current':(state.completed.includes(i)?'past':'upcoming'));
-      btn.textContent=(i+1)+' · '+s;
+      btn.textContent = (i+1)+' · '+name;
+      btn.style.padding='6px 12px'; btn.style.borderRadius='999px'; btn.style.fontSize='13px';
+      btn.style.marginRight='8px'; btn.style.border='1px solid transparent'; btn.style.cursor='pointer';
+      if(i===state.current){ btn.style.background='#6f8cff'; btn.style.color='white'; }
+      else if(state.completed.includes(i)){ btn.style.background='transparent'; btn.style.color='white'; btn.style.opacity='0.8'; btn.style.border='1px solid rgba(255,255,255,0.2)'; }
+      else { btn.style.opacity='0.5'; btn.style.color='rgba(255,255,255,0.7)'; }
       btn.addEventListener('click', ()=>{ if(i<=state.current || state.completed.includes(i)) goToStep(i); });
       topSteps.appendChild(btn);
-    })
+    });
   }
 
   function showPanel(i){
-    panels.forEach(p=>p.style.display='none');
-    panels[i].style.display='block';
+    steps.forEach(s=>s.style.display='none');
+    steps[i].style.display='block';
     state.current=i;
     renderTop();
   }
-
   function goToStep(i){ showPanel(i); }
-
   renderTop(); showPanel(0);
 
-  // Ici, tu peux copier **tout ton JS existant du formulaire onboarding**, inchangé,
-  // depuis Agent name placeholder jusqu'à Finish button.
+  // Agent name input logic
+  const agentInput = document.getElementById('agent_name_modal');
+  const nextBtn = document.getElementById('to-collect-modal');
+
+  agentInput.addEventListener('input', e=>{
+    nextBtn.style.display = e.target.value.trim() ? 'inline-block':'none';
+  });
+
+  nextBtn.addEventListener('click', ()=>{
+    state.completed.push(0);
+    goToStep(1); // Next step
+  });
+
+  // More UI toggle
+  const moreUi = document.getElementById('more_ui_modal');
+  const branding = document.getElementById('branding_section_modal');
+  moreUi.addEventListener('change', ()=> branding.style.display = moreUi.checked?'flex':'none');
+
+  // Theme selection
+  document.querySelectorAll('input[name="theme_modal"]').forEach(r=>{
+    r.parentElement.addEventListener('click', ()=>{
+      document.querySelectorAll('input[name="theme_modal"]').forEach(i=>i.parentElement.style.boxShadow='none');
+      r.parentElement.style.boxShadow='0 0 0 3px #6f8cff';
+      r.checked=true;
+    });
+  });
+
+  // Language toggle
+  document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.lang-btn-modal').forEach(b=>b.style.background='transparent');
+      btn.style.background='#6f8cff';
+    });
+  });
 </script>
+
 
 
 
