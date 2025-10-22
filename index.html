@@ -390,16 +390,17 @@
   <h2>COLLECT</h2>
   <p style="color:rgba(255,255,255,0.7)">Start adding sources (max 30).</p>
   <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;">
-    <input id="res_name_modal" type="text" placeholder="Resource name" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
-    <input id="res_url_modal" type="url" placeholder="https://..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
-    <select id="res_class_modal" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
-      <option>Internal doc</option>
-      <option>Website page</option>
-      <option>Manual</option>
-      <option>Presentation</option>
-      <option>Other</option>
-    </select>
-    <button id="add_res_modal" style="padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Add</button>
+<input id="res_name_modal" type="text" placeholder="Resource name" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+<input id="res_url_modal" type="url" placeholder="https://..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+<select id="res_class_modal" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+  <option value="Internal doc">Internal doc</option>
+  <option value="Website page">Website page</option>
+  <option value="Manual">Manual</option>
+  <option value="Presentation">Presentation</option>
+  <option value="Other">Other</option>
+</select>
+<button id="add_res_modal" type="button" style="padding:10px 14px;background:#6f8cff;border:none;border-radius:10px;color:white;cursor:pointer;">Add</button>
+
   </div>
   <div id="resources_list_modal" style="max-height:200px;overflow:auto;display:flex;flex-direction:column;gap:6px;"></div>
   <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
@@ -619,18 +620,17 @@ const addResBtnModal = document.getElementById('add_res_modal'); // <== corriger
     toggleSaveResourceBtnModal();
   }
 
-  addResBtnModal.addEventListener('click', (e)=>{
-    e.preventDefault();
-    const name = document.getElementById('res_name').value.trim();
-    const url = document.getElementById('res_url').value.trim();
-    const cls = document.getElementById('res_class').value;
-    if(!name || !url) return alert('Please provide name and url');
-    if(resourcesModal.length>=30) return alert('Max 30 resources allowed');
-    try{ new URL(url); }catch(err){ return alert('URL is invalid'); }
-    resourcesModal.push({name,url,class:cls});
-    document.getElementById('res_name').value=''; document.getElementById('res_url').value='';
-    renderResourcesModal();
-  });
+addResBtnModal.addEventListener('click', (e)=>{
+  e.preventDefault();
+  const name = document.getElementById('res_name_modal').value.trim();
+  const url = document.getElementById('res_url_modal').value.trim();
+  const cls = document.getElementById('res_class_modal').value;
+  if(!name || !url) return alert('Please provide name and url');
+  resourcesModal.push({name,url,class:cls});
+  document.getElementById('res_name_modal').value='';
+  document.getElementById('res_url_modal').value='';
+  renderResourcesModal();
+});
 
   saveResBtnModal.addEventListener('click', ()=>{
     if(resourcesModal.length===0) return alert('Add at least one resource to continue');
