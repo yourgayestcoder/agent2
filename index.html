@@ -644,34 +644,42 @@ addResBtnModal.addEventListener('click', (e) => {
     goToStep(2);
   });
 
-  // -------------------------
-  // INFERENCES step
-  // -------------------------
-  const guidelinesModal = document.getElementById('guidelines');
-  const supportEmailModal = document.getElementById('support_email');
-  const supportPhoneModal = document.getElementById('support_phone');
-  const supportUrlModal = document.getElementById('support_url');
-  const toShareBtnModal = document.getElementById('to-share');
+// -------------------------
+// INFERENCES step
+// -------------------------
+const guidelinesModal = document.getElementById('guidelines_modal');
+const supportEmailModal = document.getElementById('support_email_modal');
+const supportPhoneModal = document.getElementById('support_phone_modal');
+const supportUrlModal = document.getElementById('support_url_modal');
+const toShareBtnModal = document.getElementById('to-share-modal');
+const backToCollectModal = document.getElementById('back-to-collect-modal');
 
-  function validateInferModal(){
-    const g = guidelinesModal.value.trim();
-    const e = supportEmailModal.value.trim();
-    const p = supportPhoneModal.value.trim();
-    const u = supportUrlModal.value.trim();
-    const ok = g && e && p && u;
-    toShareBtnModal.classList.toggle('hidden', !ok);
-  }
-  [guidelinesModal, supportEmailModal, supportPhoneModal, supportUrlModal].forEach(el=>el && el.addEventListener('input', validateInferModal));
+function validateInferModal() {
+  const g = guidelinesModal.value.trim();
+  const e = supportEmailModal.value.trim();
+  const p = supportPhoneModal.value.trim();
+  const u = supportUrlModal.value.trim();
+  const ok = g && e && p && u;
+  toShareBtnModal.style.display = ok ? 'inline-block' : 'none';
+}
 
-  toShareBtnModal.addEventListener('click', ()=>{
-    const g = guidelinesModal.value.trim();
-    if(!g) return alert('Please provide guidelines');
-    localStorage.setItem('finn_guidelines_modal', JSON.stringify({guidelines:g}));
-    stateModal.completed.push(2);
-    goToStep(3);
-  });
+// Lancer la validation à chaque input
+[guidelinesModal, supportEmailModal, supportPhoneModal, supportUrlModal].forEach(el => {
+  el.addEventListener('input', validateInferModal);
+});
 
-  document.getElementById('back-to-collect').addEventListener('click', ()=> goToStep(1));
+// Next → SHARE
+toShareBtnModal.addEventListener('click', () => {
+  const g = guidelinesModal.value.trim();
+  if (!g) return alert('Please provide guidelines');
+  localStorage.setItem('finn_guidelines_modal', JSON.stringify({guidelines:g}));
+  stateModal.completed.push(2);
+  goToStep(3);
+});
+
+// Back → COLLECT
+backToCollectModal.addEventListener('click', () => goToStep(1));
+
 
   // -------------------------
   // SHARE step
