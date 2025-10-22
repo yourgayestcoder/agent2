@@ -269,6 +269,10 @@
 
     <!-- Form container -->
     <div id="onboarding-content" style="padding-top:12px;">
+
+
+
+
       <!-- REGISTER -->
       <div class="step-panel" data-step="0">
         <h2>REGISTER</h2>
@@ -458,190 +462,202 @@
 </div>
 
 <script>
-  // ---- POPUP OPEN / CLOSE ----
-  const modal = document.getElementById('onboarding-modal');
-  const openBtn = document.getElementById('open-onboarding');
-  const closeBtn = document.getElementById('close-onboarding');
+  // -------------------------
+  // Multi-step onboarding modal
+  // -------------------------
 
-  openBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
-  closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
-
-  // ---- MULTI-STEP LOGIC ----
-  const stepsMeta = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE','TEST & DEPLOY'];
-  const topSteps = document.getElementById('top-steps');
-  const panels = Array.from(document.querySelectorAll('.step-panel'));
-  let state = { current:0, completed:[] };
-
-  function renderTop(){
-    topSteps.innerHTML = '';
-    stepsMeta.forEach((s,i)=>{
-      const btn = document.createElement('button');
-      btn.className = 'step-btn ' + (i===state.current?'current':(state.completed.includes(i)?'past':'upcoming'));
-      btn.textContent = (i+1) + ' · ' + s;
-      btn.addEventListener('click', ()=>{ if(i<=state.current || state.completed.includes(i)) goToStep(i); });
-      topSteps.appendChild(btn);
-    });
-  }
+  // Steps logic
+  const stepsMetaModal = ['REGISTER','COLLECT','INFERENCES','SHARE','SUBSCRIBE','TEST & DEPLOY'];
+  const panelsModal = Array.from(document.querySelectorAll('.step-panel'));
+  let stateModal = { current: 0, completed: [] };
 
   function showPanel(i){
-    panels.forEach(p=>p.style.display='none');
-    if(panels[i]) panels[i].style.display='block';
-    state.current=i; renderTop();
+    panelsModal.forEach(p=>p.style.display='none');
+    const pan = panelsModal[i];
+    if(pan) pan.style.display='block';
+    stateModal.current = i;
   }
 
   function goToStep(i){ showPanel(i); }
 
-  renderTop(); showPanel(0);
+  // Initialize: all hidden except first step
+  showPanel(0);
 
-  // ---- REGISTER ----
-  const agentNameInput = document.getElementById('agent_name');
-  const toCollectBtn = document.getElementById('to-collect');
-  const previewName = document.getElementById('preview_name');
+  // -------------------------
+  // REGISTER step
+  // -------------------------
+  const agentNameModal = document.getElementById('agent_name_modal');
+  const toCollectModal = document.getElementById('to-collect-modal');
+  const moreUiModal = document.getElementById('more_ui_modal');
+  const brandingSectionModal = document.getElementById('branding_section_modal');
+  const primaryColorModal = document.getElementById('primary_color_modal');
+  const primaryPreviewModal = document.getElementById('primary_preview_modal');
+  const secondaryColorModal = document.getElementById('secondary_color_modal');
+  const secondaryPreviewModal = document.getElementById('secondary_preview_modal');
 
-  agentNameInput.addEventListener('input', e=>{
-    const v=e.target.value.trim();
-    previewName.textContent = v;
-    toCollectBtn.style.display = v?'inline-block':'none';
-  });
-
-  toCollectBtn.addEventListener('click', ()=>{
-    state.completed.push(0); showPanel(1);
+  // Show Next button if Agent name filled
+  agentNameModal.addEventListener('input', e => {
+    const v = e.target.value.trim();
+    toCollectModal.style.display = v ? 'inline-block' : 'none';
   });
 
   // More UI toggle
-  const moreUi = document.getElementById('more_ui');
-  const brandingSection = document.getElementById('branding_section');
-  moreUi.addEventListener('change', ()=>{
-    if(moreUi.checked) brandingSection.classList.remove('hidden'); 
-    else brandingSection.classList.add('hidden');
+  moreUiModal.addEventListener('change', ()=>{
+    brandingSectionModal.style.display = moreUiModal.checked ? 'flex' : 'none';
   });
 
-  // Color preview
-  const primary = document.getElementById('primary_color');
-  const primaryPreview = document.getElementById('primary_preview');
-  const secondary = document.getElementById('secondary_color');
-  const secondaryPreview = document.getElementById('secondary_preview');
-
+  // Color previews
   function updatePreview(input, preview){
     const v = input.value.trim();
-    try{ if(v.startsWith('#')&&(v.length===7||v.length===4)) preview.style.background=v; else preview.style.background='transparent'; }catch(e){ preview.style.background='transparent'; }
+    try{
+      if(v.startsWith('#') && (v.length===7||v.length===4)) preview.style.background=v;
+      else preview.style.background='transparent';
+    }catch(e){ preview.style.background='transparent'; }
   }
-  if(primary) primary.addEventListener('input', ()=>updatePreview(primary, primaryPreview));
-  if(secondary) secondary.addEventListener('input', ()=>updatePreview(secondary, secondaryPreview));
-
-  // Theme cards selection
-  document.querySelectorAll('.theme-card').forEach(card=>{
-    card.addEventListener('click', ()=>{
-      document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));
-      card.classList.add('selected');
-      card.querySelector('input').checked=true;
-    });
-  });
+  primaryColorModal.addEventListener('input', ()=>updatePreview(primaryColorModal, primaryPreviewModal));
+  secondaryColorModal.addEventListener('input', ()=>updatePreview(secondaryColorModal, secondaryPreviewModal));
 
   // Language toggle
-  document.querySelectorAll('.lang-toggle button').forEach(btn=>{
+  document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.lang-toggle button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.lang-btn-modal').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
     });
   });
 
-  // ---- COLLECT ----
-  const resources = [];
-  const resList = document.getElementById('resources_list');
-  const addResBtn = document.getElementById('add_res');
-  const saveResBtn = document.getElementById('save_resources');
+  // Next → COLLECT
+  toCollectModal.addEventListener('click', ()=>{
+    stateModal.completed.push(0);
+    goToStep(1);
+  });
 
-  function toggleSaveResourceBtn(){ resources.length>0? saveResBtn.classList.remove('hidden') : saveResBtn.classList.add('hidden'); }
+  // -------------------------
+  // COLLECT step
+  // -------------------------
+  const resourcesModal = [];
+  const resListModal = document.getElementById('resources_list');
+  const addResBtnModal = document.getElementById('add_res');
+  const saveResBtnModal = document.getElementById('save_resources');
 
-  function renderResources(){
-    resList.innerHTML='';
-    resources.forEach((r,idx)=>{
+  function toggleSaveResourceBtnModal(){
+    if(resourcesModal.length>0) saveResBtnModal.classList.remove('hidden');
+    else saveResBtnModal.classList.add('hidden');
+  }
+
+  function renderResourcesModal(){
+    resListModal.innerHTML = '';
+    resourcesModal.forEach((r,idx)=>{
       const item = document.createElement('div');
       item.className='res-item';
       const fav = `https://www.google.com/s2/favicons?sz=64&domain=${(new URL(r.url)).hostname}`;
-      item.innerHTML=`<img src="${fav}" alt="favicon" onerror="this.style.opacity=0.2">
+      item.innerHTML = `<img src="${fav}" alt="favicon" onerror="this.style.opacity=0.2">
         <div style="flex:1">
           <div style="font-weight:700"><a href="${r.url}" target="_blank">${r.name}</a></div>
-          <div style="font-size:13px;color:var(--muted)">${r.url}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7)">${r.url}</div>
         </div>
         <div class="cls">${r.class}</div>
         <div><button data-idx="${idx}" class="btn ghost">Delete</button></div>`;
-      resList.appendChild(item);
+      resListModal.appendChild(item);
     });
-    Array.from(resList.querySelectorAll('button')).forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const i=Number(e.currentTarget.dataset.idx);
-        resources.splice(i,1); renderResources(); toggleSaveResourceBtn();
+    Array.from(resListModal.querySelectorAll('button')).forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const i = Number(e.currentTarget.dataset.idx);
+        resourcesModal.splice(i,1);
+        renderResourcesModal();
+        toggleSaveResourceBtnModal();
       });
     });
-    toggleSaveResourceBtn();
+    toggleSaveResourceBtnModal();
   }
 
-  addResBtn.addEventListener('click', e=>{
+  addResBtnModal.addEventListener('click', (e)=>{
     e.preventDefault();
-    const name=document.getElementById('res_name').value.trim();
-    const url=document.getElementById('res_url').value.trim();
-    const cls=document.getElementById('res_class').value;
-    if(!name || !url) return alert('Provide name and url');
-    if(resources.length>=30) return alert('Max 30 resources');
-    try{ new URL(url); }catch(err){ return alert('Invalid URL'); }
-    resources.push({name,url,class:cls});
+    const name = document.getElementById('res_name').value.trim();
+    const url = document.getElementById('res_url').value.trim();
+    const cls = document.getElementById('res_class').value;
+    if(!name || !url) return alert('Please provide name and url');
+    if(resourcesModal.length>=30) return alert('Max 30 resources allowed');
+    try{ new URL(url); }catch(err){ return alert('URL is invalid'); }
+    resourcesModal.push({name,url,class:cls});
     document.getElementById('res_name').value=''; document.getElementById('res_url').value='';
-    renderResources();
+    renderResourcesModal();
   });
 
-  saveResBtn.addEventListener('click', ()=>{
-    if(resources.length===0) return alert('Add at least one resource');
-    localStorage.setItem('finn_resources', JSON.stringify(resources));
-    state.completed.push(1); showPanel(2);
+  saveResBtnModal.addEventListener('click', ()=>{
+    if(resourcesModal.length===0) return alert('Add at least one resource to continue');
+    localStorage.setItem('finn_resources_modal', JSON.stringify(resourcesModal));
+    stateModal.completed.push(1);
+    goToStep(2);
   });
 
-  // ---- INFERENCES ----
-  const guidelines = document.getElementById('guidelines');
-  const supportEmail = document.getElementById('support_email');
-  const supportPhone = document.getElementById('support_phone');
-  const supportUrl = document.getElementById('support_url');
-  const toShareBtn = document.getElementById('to-share');
+  // -------------------------
+  // INFERENCES step
+  // -------------------------
+  const guidelinesModal = document.getElementById('guidelines');
+  const supportEmailModal = document.getElementById('support_email');
+  const supportPhoneModal = document.getElementById('support_phone');
+  const supportUrlModal = document.getElementById('support_url');
+  const toShareBtnModal = document.getElementById('to-share');
 
-  function validateInfer(){
-    const g=guidelines.value.trim();
-    const e=supportEmail.value.trim();
-    const p=supportPhone.value.trim();
-    const u=supportUrl.value.trim();
-    (g && e && p && u)? toShareBtn.classList.remove('hidden') : toShareBtn.classList.add('hidden');
+  function validateInferModal(){
+    const g = guidelinesModal.value.trim();
+    const e = supportEmailModal.value.trim();
+    const p = supportPhoneModal.value.trim();
+    const u = supportUrlModal.value.trim();
+    const ok = g && e && p && u;
+    toShareBtnModal.classList.toggle('hidden', !ok);
+  }
+  [guidelinesModal, supportEmailModal, supportPhoneModal, supportUrlModal].forEach(el=>el && el.addEventListener('input', validateInferModal));
+
+  toShareBtnModal.addEventListener('click', ()=>{
+    const g = guidelinesModal.value.trim();
+    if(!g) return alert('Please provide guidelines');
+    localStorage.setItem('finn_guidelines_modal', JSON.stringify({guidelines:g}));
+    stateModal.completed.push(2);
+    goToStep(3);
+  });
+
+  document.getElementById('back-to-collect').addEventListener('click', ()=> goToStep(1));
+
+  // -------------------------
+  // SHARE step
+  // -------------------------
+  const audButtonsModal = Array.from(document.querySelectorAll('.aud-btn'));
+  const chButtonsModal = Array.from(document.querySelectorAll('.ch-btn'));
+  const toSubscribeBtnModal = document.getElementById('to-subscribe');
+
+  let selectedAudienceModal = null;
+  let selectedChannelModal = null;
+
+  function updateShareStateModal(){
+    audButtonsModal.forEach(b=> b.classList.toggle('selected', b.dataset.audience===selectedAudienceModal));
+    chButtonsModal.forEach(b=> b.classList.toggle('selected', b.dataset.channel===selectedChannelModal));
+    toSubscribeBtnModal.classList.toggle('hidden', !(selectedAudienceModal && selectedChannelModal));
   }
 
-  [guidelines, supportEmail, supportPhone, supportUrl].forEach(el=>el && el.addEventListener('input', validateInfer));
-  toShareBtn.addEventListener('click', ()=>{ state.completed.push(2); showPanel(3); });
-  document.getElementById('back-to-collect').addEventListener('click', ()=> showPanel(1));
+  audButtonsModal.forEach(b=> b.addEventListener('click', ()=>{
+    selectedAudienceModal = b.dataset.audience===selectedAudienceModal? null : b.dataset.audience;
+    updateShareStateModal();
+  }));
 
-  // ---- SHARE ----
-  const audButtons = Array.from(document.querySelectorAll('.aud-btn'));
-  const chButtons = Array.from(document.querySelectorAll('.ch-btn'));
-  const toSubscribeBtn = document.getElementById('to-subscribe');
-  let selectedAudience=null, selectedChannel=null;
+  chButtonsModal.forEach(b=> b.addEventListener('click', ()=>{
+    selectedChannelModal = b.dataset.channel===selectedChannelModal? null : b.dataset.channel;
+    updateShareStateModal();
+  }));
 
-  function updateShareState(){
-    audButtons.forEach(b=>b.classList.toggle('selected', b.dataset.audience===selectedAudience));
-    chButtons.forEach(b=>b.classList.toggle('selected', b.dataset.channel===selectedChannel));
-    (selectedAudience && selectedChannel)? toSubscribeBtn.classList.remove('hidden') : toSubscribeBtn.classList.add('hidden');
-  }
+  toSubscribeBtnModal.addEventListener('click', ()=>{ stateModal.completed.push(3); goToStep(4); });
+  document.getElementById('back-to-infer').addEventListener('click', ()=> goToStep(2));
 
-  audButtons.forEach(b=>b.addEventListener('click', ()=>{ selectedAudience=(b.dataset.audience===selectedAudience? null : b.dataset.audience); updateShareState(); }));
-  chButtons.forEach(b=>b.addEventListener('click', ()=>{ selectedChannel=(b.dataset.channel===selectedChannel? null : b.dataset.channel); updateShareState(); }));
-
-  toSubscribeBtn.addEventListener('click', ()=>{ state.completed.push(3); showPanel(4); });
-  document.getElementById('back-to-infer').addEventListener('click', ()=> showPanel(2));
-
-  // ---- SUBSCRIBE ----
+  // -------------------------
+  // SUBSCRIBE step
+  // -------------------------
   document.getElementById('finish').addEventListener('click', ()=>{
-    state.completed.push(4);
-    alert('Onboarding completed (demo). Next: Test & Deploy coming soon.');
-    showPanel(0); state.completed=[];
-    modal.style.display='none';
+    stateModal.completed.push(4);
+    alert('Onboarding completed (demo).');
+    goToStep(0); stateModal.completed=[];
   });
 </script>
+
 
 
 
