@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finn — AI Agents for Business (Dark)</title>
+
+  <style>
+    @font-face{
+      font-family: 'VinciSans';
+      src: url('https://civilpromaws.s3.eu-north-1.amazonaws.com/VinciSans-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* force the provided font everywhere */
+    *,*::before,*::after{box-sizing:border-box;font-family:VinciSans,system-ui,-apple-system,'Segoe UI',Roboto,Arial!important}
+
+    :root{
+      --bg: rgb(23,17,15);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.75);
+      --muted-2: rgba(255,255,255,0.6);
+      --border: rgba(255,255,255,0.12);
+      --accent:#6f8cff;
+      --accent-2:#6366f1;
+      --orange:#ff7b00;
+      --max:900px;
+    }
+
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 18px}
+
+    /* SECTION 1 */
+    .hero{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;max-width:1200px;margin:0 auto}
+    .hero-left{max-width:var(--max)}
+    .eyebrow{font-size:13px;color:var(--muted);margin-bottom:8px}
+    h1{font-size:38px;line-height:1.02;margin:8px 0;color:var(--text)}
+
+    .typed-wrap{display:inline-block;position:relative;color:var(--orange);font-weight:700}
+    .typed-cursor{display:inline-block;width:2px;background:var(--orange);margin-left:6px;height:1.05em;vertical-align:baseline;animation:blink 1s steps(2) infinite}
+    @keyframes blink{50%{opacity:0}}
+
+    p.lead{color:var(--muted);max-width:700px;margin-top:12px}
+    .cta-row{margin-top:18px}
+    .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:0;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
+
+    .hero-right img{width:100%;border-radius:12px;display:block;border:1px solid var(--border)}
+
+    /* SECTION 2 - full-width */
+    .feature-hero{position:relative;margin-top:36px;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;overflow:hidden}
+    .feature-hero .bg{background-size:cover;background-position:center;height:260px;width:100%}
+    .feature-hero .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:center}
+    .feature-hero .content{text-align:center;color:var(--text);max-width:var(--max);padding:20px}
+    .feature-hero h2{color:var(--text);margin:0 0 8px 0}
+    .feature-hero .lead{color:var(--muted)}
+
+    /* SECTION 3 */
+    .three-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+    .card-3{padding:18px;border-radius:10px;border:1px solid var(--border);text-align:center;background:rgba(255,255,255,0.02)}
+    .card-3 img{width:72px;height:72px;object-fit:cover;margin-bottom:12px;border-radius:8px}
+    .card-3 h3{margin:6px 0;color:var(--text)}
+    .card-3 p{color:var(--muted);font-size:14px}
+
+    /* SECTION 4 */
+    .six-col{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:36px}
+    .six-col .col{display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;gap:8px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.02)}
+    .item img{width:44px;height:44px;border-radius:6px;object-fit:cover}
+    .item .meta{font-size:13px;color:var(--text)}
+    .item .meta b{display:block}
+    .item .muted{color:var(--muted)}
+
+    /* SECTION 5 */
+    .footer-hero{position:relative;margin-top:36px;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;overflow:hidden}
+    .footer-hero .bg{background-size:cover;background-position:center;height:320px;width:100%}
+    .footer-hero .overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));display:flex;align-items:center}
+    .footer-hero .inner{max-width:900px;padding:28px;color:var(--text)}
+    .footer-hero h2{color:var(--text)}
+    .footer-hero .lead{color:var(--muted)}
+    .footer-hero .links{margin-top:16px;color:var(--muted-2);font-size:13px}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:80}
+    .modal{width:95%;max-width:1000px;height:85vh;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;overflow:auto;border:1px solid var(--border)}
+    .modal .close{position:absolute;right:18px;top:12px;z-index:90;background:rgba(255,255,255,0.03);color:var(--text);border:1px solid var(--border);padding:8px;border-radius:8px;cursor:pointer}
+    .modal .frame{width:100%;height:100%;border:0;border-radius:12px;background:transparent}
+
+    /* responsive */
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr;gap:18px}
+      .three-cols{grid-template-columns:1fr}
+      .six-col{grid-template-columns:repeat(2,1fr)}
+      .feature-hero .bg{height:220px}
+      .footer-hero .bg{height:220px}
+    }
+    @media (max-width:480px){
+      .six-col{grid-template-columns:1fr}
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <!-- SECTION 1 -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="eyebrow">AI Agents • Tailored for companies</div>
+        <h1>Get the best-performing AI Agent for <span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
+        <p class="lead">Deliver faster responses, automate repetitive tasks and scale your team's productivity with a customizable agent trained on your data.</p>
+        <div class="cta-row">
+          <button id="open-onboarding" class="btn">Create your Agent</button>
+        </div>
+      </div>
+      <div class="hero-right">
+        <img src="https://images.unsplash.com/photo-1526378720793-6c1d3f0d2a3f?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="Hero image" />
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="feature-hero">
+      <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder')"></div>
+      <div class="overlay">
+        <div class="content">
+          <h2>Trusted by teams worldwide</h2>
+          <p class="lead">Integrates with ChatGPT API and Supabase for secure, scalable deployments.</p>
+          <div style="margin-top:12px"><button class="btn">Get started</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="three-cols">
+      <div class="card-3">
+        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="icon">
+        <h3>Fast setup</h3>
+        <p class="muted">From onboarding to live in minutes with guided steps.</p>
+      </div>
+      <div class="card-3">
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="icon">
+        <h3>Custom guidelines</h3>
+        <p class="muted">Define what your agent can and can't say with prompt guidelines.</p>
+      </div>
+      <div class="card-3">
+        <img src="https://images.unsplash.com/photo-1526374981155-8f0b5d6b3b7d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="icon">
+        <h3>Secure storage</h3>
+        <p class="muted">Store resources and settings in Supabase with fine-grained control.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="six-col"></section>
+
+    <!-- SECTION 5 -->
+    <section class="footer-hero">
+      <div class="bg" style="background-image:url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder')"></div>
+      <div class="overlay">
+        <div class="inner">
+          <h2>Ready to scale with AI?</h2>
+          <p class="lead">Start with a trial agent and tune it to your business workflows.</p>
+          <div style="margin-top:14px;display:flex;gap:12px">
+            <button class="btn">Start free trial</button>
+            <button class="btn" id="open-onboarding-2">Create an agent</button>
+          </div>
+          <div class="links">
+            © 2025 Finn — <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="#">Contact</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Onboarding modal">
+      <button class="close" id="close-modal">✕</button>
+      <iframe class="frame" id="onboarding-frame" src="finn-agent-onboarding.html"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const words=['Business','Commercial','Sales','Project'];
+    const target=document.getElementById('typed-target');
+    let wIndex=0,cIndex=0;
+    function typeOnce(){
+      const w=words[wIndex];
+      if(cIndex<=w.length){
+        target.textContent=w.slice(0,cIndex);
+        cIndex++;
+        setTimeout(typeOnce,120);
+      }else{
+        setTimeout(()=>{wIndex=(wIndex+1)%words.length;cIndex=0;typeOnce();},900);
+      }
+    }
+    typeOnce();
+
+    const sixCol=document.querySelector('.six-col');
+    const items=[
+      ['https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=800','Integrations','Connect your stack'],
+      ['https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800','Analytics','Measure performance'],
+      ['https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=800','Multilingual','Support multiple languages'],
+      ['https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800','Security','Enterprise-ready'],
+      ['https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800','Scalability','Grow with traffic'],
+      ['https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800','Support','Email & phone help'],
+      ['https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800','Customization','Fine-tune prompts'],
+      ['https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800','Hosting','Managed hosting'],
+      ['https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800','Embeddable','Works on your site'],
+      ['https://images.unsplash.com/photo-1532619187600-7b2a5d2c2e0b?q=80&w=800','Compliance','GDPR-ready options'],
+      ['https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=800','Team Access','Invite teammates'],
+      ['https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=800','Performance','Optimized prompts']
+    ];
+
+    for(let col=0;col<6;col++){
+      const c=document.createElement('div');c.className='col';
+      const i1=items[col*2];const i2=items[col*2+1];
+      [i1,i2].forEach(it=>{
+        const el=document.createElement('div');el.className='item';
+        el.innerHTML=`<img src="${it[0]}" alt="${it[1]}"><div class="meta"><b>${it[1]}</b><span class="muted">${it[2]}</span></div>`;
+        c.appendChild(el);
+      });
+      sixCol.appendChild(c);
+    }
+
+
+  </script>
+</body>
+</html>
