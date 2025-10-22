@@ -609,28 +609,33 @@ const addResBtnModal = document.getElementById('add_res_modal'); // <== corriger
         <div><button data-idx="${idx}" class="btn ghost">Delete</button></div>`;
       resListModal.appendChild(item);
     });
-    Array.from(resListModal.querySelectorAll('button')).forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        const i = Number(e.currentTarget.dataset.idx);
-        resourcesModal.splice(i,1);
-        renderResourcesModal();
-        toggleSaveResourceBtnModal();
-      });
-    });
+Array.from(resListModal.querySelectorAll('button')).forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const i = Number(e.currentTarget.dataset.idx);
+    resourcesModal.splice(i, 1);
+    renderResourcesModal();
+    toggleSaveResBtnModal(); // <-- masque le bouton si plus rien
+  });
+});
     toggleSaveResourceBtnModal();
   }
 
-addResBtnModal.addEventListener('click', (e)=>{
+addResBtnModal.addEventListener('click', (e) => {
   e.preventDefault();
   const name = document.getElementById('res_name_modal').value.trim();
   const url = document.getElementById('res_url_modal').value.trim();
   const cls = document.getElementById('res_class_modal').value;
-  if(!name || !url) return alert('Please provide name and url');
-  resourcesModal.push({name,url,class:cls});
-  document.getElementById('res_name_modal').value='';
-  document.getElementById('res_url_modal').value='';
+  if (!name || !url) return alert('Please provide name and url');
+  if (resourcesModal.length >= 30) return alert('Max 30 resources allowed');
+  try { new URL(url); } catch (err) { return alert('URL is invalid'); }
+
+  resourcesModal.push({ name, url, class: cls });
+  document.getElementById('res_name_modal').value = '';
+  document.getElementById('res_url_modal').value = '';
   renderResourcesModal();
+  toggleSaveResBtnModal(); // <-- affiche le bouton
 });
+
 
   saveResBtnModal.addEventListener('click', ()=>{
     if(resourcesModal.length===0) return alert('Add at least one resource to continue');
@@ -705,6 +710,15 @@ addResBtnModal.addEventListener('click', (e)=>{
     alert('Onboarding completed (demo).');
     goToStep(0); stateModal.completed=[];
   });
+
+  function toggleSaveResBtnModal() {
+  if (resourcesModal.length > 0) {
+    document.getElementById('save_res_modal').style.display = 'inline-block';
+  } else {
+    document.getElementById('save_res_modal').style.display = 'none';
+  }
+}
+
 </script>
 
 
