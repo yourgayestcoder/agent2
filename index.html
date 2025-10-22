@@ -101,6 +101,50 @@
       .six-col{grid-template-columns:1fr}
     }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; /* passe à flex quand ouvert */
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+}
+
+.modal {
+  width: 95%;
+  max-width: 900px;
+  max-height: 85vh;
+  background: var(--bg);
+  border-radius: 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: relative;
+}
+
+.modal .close {
+  position: absolute;
+  right: 18px;
+  top: 12px;
+  z-index: 90;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Onboarding form steps */
+.onboarding-step { display: none; flex-direction: column; gap: 12px; }
+.onboarding-step.active { display: flex; }
+.step-nav { display: flex; overflow-x: auto; gap: 6px; margin-bottom: 20px; }
+.step-nav button { flex: 0 0 auto; padding: 8px 14px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; opacity: 0.5; }
+.step-nav button.current { background: var(--accent); opacity: 1; color: white; }
+.step-nav button.completed { background: none; opacity: 1; color: var(--text); border: 1px solid var(--border); }
+
+
   </style>
 </head>
 <body>
@@ -228,5 +272,115 @@
 
 
   </script>
+
+
+
+<!-- Modal for onboarding form -->
+<div class="modal-backdrop" id="modal" style="display:none;">
+  <div class="modal">
+    <button class="close" id="close-modal">✕</button>
+
+    <!-- Step navigation -->
+    <div class="step-nav">
+      <button class="current">REGISTER</button>
+      <button>COLLECT</button>
+      <button>INFERENCES</button>
+      <button>SHARE</button>
+      <button>SUBSCRIBE</button>
+      <button>TEST & DEPLOY</button>
+    </div>
+
+    <!-- Step 1: REGISTER -->
+    <div id="step-register" class="onboarding-step active">
+      <input type="text" placeholder="Ex: Clovis, Perceval, Lancelot" />
+      <input type="text" placeholder="Describe your agent" />
+      <input type="text" placeholder="Your company" />
+      <select>
+        <option>Less than 3</option>
+        <option>Less than 5</option>
+        <option>Less than 10</option>
+        <option>Less than 50</option>
+        <option>50 and more</option>
+      </select>
+      <select>
+        <option>Retail</option>
+        <option>Logistics</option>
+      </select>
+      <div class="radio-group">
+        <input type="radio" id="theme-light" name="theme" checked /><label for="theme-light">Light</label>
+        <input type="radio" id="theme-dark" name="theme" /><label for="theme-dark">Dark</label>
+        <input type="radio" id="theme-fruit" name="theme" /><label for="theme-fruit">Fruit</label>
+      </div>
+      <button class="btn">Next</button>
+    </div>
+
+    <!-- Step 2: COLLECT -->
+    <div id="step-collect" class="onboarding-step">
+      <p>Add your resources here (mockup)</p>
+      <button class="btn" disabled>Save Resources</button>
+    </div>
+
+    <!-- Step 3: INFERENCES -->
+    <div id="step-inferences" class="onboarding-step">
+      <textarea placeholder="Give guidelines"></textarea>
+      <input type="email" placeholder="Support email" />
+      <input type="tel" placeholder="Support phone" />
+      <input type="url" placeholder="Support website" />
+      <button class="btn" disabled>Share my agent</button>
+    </div>
+
+    <!-- Step 4: SHARE -->
+    <div id="step-share" class="onboarding-step">
+      <p>Select who can use your agent</p>
+      <button class="btn">Internal use only</button>
+      <button class="btn">Customers B2C</button>
+      <button class="btn">Customers B2B</button>
+      <p>Select preferred channels</p>
+      <button class="btn">Hosted by Finn</button>
+      <button class="btn">Embed on your website</button>
+      <button class="btn" disabled>Continue to subscribe</button>
+    </div>
+
+    <!-- Step 5: SUBSCRIBE -->
+    <div id="step-subscribe" class="onboarding-step">
+      <p>Pick a plan (mockup)</p>
+    </div>
+  </div>
+</div>
+  <script>
+const modal = document.getElementById('modal');
+const openBtn = document.getElementById('open-onboarding');
+const closeBtn = document.getElementById('close-modal');
+
+// Open modal
+openBtn.addEventListener('click', () => {
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+});
+
+// Close modal
+closeBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+});
+
+// Navigation entre steps
+const steps = document.querySelectorAll('.onboarding-step');
+const navButtons = document.querySelectorAll('.step-nav button');
+
+steps.forEach((step,i) => {
+  const nextBtn = step.querySelector('.btn');
+  if(nextBtn){
+    nextBtn.addEventListener('click', () => {
+      step.classList.remove('active');
+      steps[i+1]?.classList.add('active');
+      navButtons[i].classList.add('completed');
+      navButtons[i+1].classList.add('current');
+      navButtons[i].classList.remove('current');
+    });
+  }
+});
+</script>
+
 </body>
 </html>
