@@ -45,13 +45,26 @@
     .wrap{max-width:1200px;margin:0 auto;padding:28px 18px}
 
     /* SECTION 1 */
-    .hero{ display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;max-width:900px;margin:0 auto}
+    .hero{ 
+display: grid;
+grid-template-columns: 3fr 2fr;
+gap: 30px;
+align-items: center;
+max-width: 1000px;
+margin: 0 auto;
+    }
     .hero-left{max-width:var(--max)}
     .eyebrow{font-size:13px;color:var(--muted);margin-bottom:8px}
     h1{font-size:38px;line-height:1.02;margin:8px 0;color:var(--text)}
 
-    .typed-wrap{display:inline-block;position:relative;color:var(--orange);font-weight:700}
-    .typed-cursor{display:inline-block;width:2px;background:var(--orange);margin-left:6px;height:1.05em;vertical-align:baseline;animation:blink 1s steps(2) infinite}
+.typed-wrap{
+  font-family: 'VinciBig' !important;
+  color: #16ffbd !important;
+  font-weight: 100 !important;
+  display:inline-block;position:relative;
+
+}
+    .typed-cursor{display:inline-block;width:2px;background:#16ffbd;margin-left:6px;height:1.05em;vertical-align:baseline;animation:blink 1s steps(2) infinite}
     @keyframes blink{50%{opacity:0}}
 
     p.lead{color:var(--muted);max-width:700px;margin-top:12px}
@@ -261,13 +274,24 @@
 }
 
 .helloagent {
-font-family: VinciBig !important; 
+font-family: VinciBig; 
 font-weight: 100 !important;
 cursor: default; 
 font-size: 46px !important; 
 line-height: 52px !important;
 }
 
+
+.nogirl {
+    max-width: 700px;
+    margin-top: 12px;
+    font-size: 22px;
+    font-weight: 100;
+    cursor: default;
+    font-family: 'VinciSans' !important;
+    color: #fff;
+    line-height: 33px;
+}
 
 
   </style>
@@ -280,8 +304,8 @@ line-height: 52px !important;
     <section class="hero">
       <div class="hero-left">
         <div class="eyebrow">The #1 choice for Medium Business</div>
-        <h1  class="helloagent">Your mini AI-help agent with easy setting-up for <span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
-        <p class="lead">Deliver faster responses, automate repetitive tasks and scale your team's productivity with a customizable agent trained on your data.</p>
+        <h1  class="helloagent">Your mini AI-help agent with easy setting-up for<br><span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
+        <p class="nogirl">Deliver faster responses, automate repetitive tasks and scale your team's productivity with a customizable agent trained on your data.</p>
         <div class="cta-row">
 
 <!-- Bouton -->
