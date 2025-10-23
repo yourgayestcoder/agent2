@@ -320,6 +320,107 @@ typed-target {
 }
 
 
+
+
+
+
+
+  .option-groupK {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .options-rowK {
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .option-cardK {
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:22px;
+    border-radius:18px;
+    border:2px solid rgba(255,255,255,0.2);
+    background:transparent;
+    cursor:pointer;
+    min-width:260px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+    user-select:none;
+    -webkit-user-select:none;
+    outline: none;
+  }
+
+  .option-cardK:focus {
+    box-shadow: 0 0 0 4px rgba(0,123,255,0.12);
+  }
+
+  /* état sélectionné */
+  .option-cardK.selected {
+    border-width:4px;
+    border-color: #1177ff; /* bleu épais */
+    box-shadow: 0 6px 18px rgba(17,119,255,0.12);
+  }
+
+  /* radio visuel */
+  .option-radioK {
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:4px solid #111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex: 0 0 44px;
+    background: #fff;
+  }
+
+  .option-radioK .dotK {
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background: transparent;
+    transition: background .12s ease, transform .12s ease;
+    transform: scale(1);
+  }
+
+  .option-cardK.selected .option-radioK {
+    border-color:#1177ff;
+  }
+  .option-cardK.selected .option-radioK .dotK {
+    background:#1177ff;
+    transform: scale(1);
+  }
+
+  /* texte */
+  .option-labelK {
+    font-size:28px;
+    line-height:1;
+    color:inherit;
+    white-space:nowrap;
+  }
+
+  /* pour thème sombre clair si besoin */
+  .theme-darkK .option-cardK {
+    color: white;
+  }
+  .theme-lightK .option-cardK {
+    color: black;
+    background: #fff;
+  }
+
+  /* rendre le radio accessible (cache l'input réel) */
+  .option-cardK input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width:0;
+    height:0;
+  }
+
   </style>
 </head>
 <body>
@@ -340,7 +441,7 @@ typed-target {
 <!-- Onboarding Modal -->
 <div id="onboarding-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;overflow:auto;">
   <div style="width:95%;max-width:900px;background:#17110f;border-radius:12px;padding:20px;position:relative;color:white;">
-    <button id="close-onboarding" style="position:absolute;right:16px;top:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.2);padding:8px;border-radius:8px;color:white;cursor:pointer;">✕</button>
+    <button id="close-onboarding" style="position:absolute;right:16px;top:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.2);padding:8px;border-radius:8px;color:white;cursor:pointer;">Cancel</button>
 
     <!-- Top sticky steps bar -->
     <div style="position:sticky;top:0;z-index:50;background:rgba(23,17,15,0.95);backdrop-filter:blur(6px);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.1);display:block;">
@@ -355,23 +456,20 @@ typed-target {
 
       <!-- REGISTER -->
       <div class="step-panel" data-step="0">
-        <h2>REGISTER</h2>
-        <p style="color:rgba(255,255,255,0.7)">Name and brand your agent.</p>
+        <p style="color:rgba(255,255,255,0.7)">Let's start creating your new AI mini-agent.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;">
           <div style="flex:1 1 48%">
             <label>Agent name</label>
-            <input id="agent_name_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+            <input id="agent_name_modal" type="text" placeholder="Ex: Clovis" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
           </div>
           <div style="flex:1 1 48%">
             <label>Your company</label>
-            <input id="company_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+            <input id="company_modal" type="text" placeholder="Ex: ClovisCorp" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
           </div>
           <div style="flex:1 1 100%">
             <label>Describe your agent</label>
-            <input id="agent_desc_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+            <input id="agent_desc_modal" type="text" placeholder="Ex: Helping customer with technical knowledge." style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
           </div>
-
-
 
           <div style="flex:1 1 48%">
             <label>Company size</label>
@@ -398,25 +496,109 @@ typed-target {
             </select>
           </div>
 
-                    <div style="flex:1 1 48%">
-            <label>Agent Language</label>
-            <select id="agent_language_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
-              <option>French</option>
-              <option>Less than 5</option>
-              <option>Less than 10</option>
-              <option>Less than 50</option>
-              <option>50 and more</option>
-            </select>
-          </div>
-          <div style="flex:1 1 48%">
-            <label>Interface Theme</label>
-            <select id="interface_theme_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
-              <option>Light</option>
-              <option>Dark</option>
-              <option>Purple Fruit</option>
-              <option>Maroon Forest</option>
-            </select>
-          </div>
+
+
+
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+  <!-- Groupe 1 : Agent Language -->
+  <div style="flex:1 1 48%">
+    <label style="display:block;margin-bottom:8px;font-weight:600;">Agent Language</label>
+    <div class="option-groupK" id="agent_language_group">
+      <input type="hidden" name="agent_language" id="agent_language_value" value="French">
+      <div class="options-rowK">
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="French" data-group="agent_language">
+          <input type="radio" name="agent_language_radio" checked>
+          <div class="option-radioK"><div class="dotK"></div></div>
+          <div class="option-labelK">French</div>
+        </div>
+
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="English" data-group="agent_language">
+          <input type="radio" name="agent_language_radio">
+          <div class="option-radioK"><div class="dot"></div></div>
+          <div class="option-labelK">English</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Groupe 2 : Interface Theme -->
+  <div style="flex:1 1 48%">
+    <label style="display:block;margin-bottom:8px;font-weight:600;">Interface Theme</label>
+    <div class="option-groupK" id="interface_theme_group">
+      <input type="hidden" name="interface_theme" id="interface_theme_value" value="Light">
+      <div class="options-rowK">
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="Light" data-group="interface_theme">
+          <input type="radio" name="interface_theme_radio" checked>
+          <div class="option-radioK"><div class="dotK"></div></div>
+          <div class="option-labelK">Light</div>
+        </div>
+
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="Dark" data-group="interface_theme">
+          <input type="radio" name="interface_theme_radio">
+          <div class="option-radioK"><div class="dot"></div></div>
+          <div class="option-labelK">Dark</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    // gestionnaire unique pour toutes les option-card
+    const cards = document.querySelectorAll('.option-card');
+
+    function selectCard(card) {
+      const group = card.getAttribute('data-group');
+      const value = card.getAttribute('data-value');
+
+      // désélectionner tous du groupe
+      document.querySelectorAll('.option-card[data-group="'+group+'"]').forEach(c => {
+        c.classList.remove('selected');
+        c.setAttribute('aria-checked','false');
+        const r = c.querySelector('input[type="radio"]');
+        if (r) r.checked = false;
+      });
+
+      // sélectionner le bon
+      card.classList.add('selected');
+      card.setAttribute('aria-checked','true');
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+
+      // mettre à jour l'input caché correspondant
+      const hidden = document.getElementById(group + '_value');
+      if (hidden) hidden.value = value;
+      // optionnel : déclencher un événement custom si d'autres scripts doivent écouter
+      const event = new CustomEvent('optionChanged', { detail: { group, value } });
+      document.dispatchEvent(event);
+    }
+
+    // initialiser l'état en fonction de checked si présent
+    document.querySelectorAll('.option-card').forEach(card => {
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio && radio.checked) {
+        card.classList.add('selected');
+        card.setAttribute('aria-checked','true');
+      }
+    });
+
+    // clic et clavier
+    cards.forEach(card => {
+      card.addEventListener('click', () => selectCard(card));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          selectCard(card);
+        }
+      });
+    });
+
+    // Exemple: écouteur externe si tu veux réagir au changement
+    // document.addEventListener('optionChanged', (e) => {
+    //   console.log('changed', e.detail.group, e.detail.value);
+    // });
+  })();
+</script>
 
 
 
