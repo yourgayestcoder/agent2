@@ -410,13 +410,16 @@ typed-target {
           </div>
           <div style="flex:1 1 48%">
             <label>Interface Theme</label>
-            <select id="industry_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+            <select id="interface_theme_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
               <option>Light</option>
               <option>Dark</option>
               <option>Purple Fruit</option>
               <option>Maroon Forest</option>
             </select>
           </div>
+
+
+
 
 
 
@@ -594,12 +597,8 @@ typed-target {
   // -------------------------
   const agentNameModal = document.getElementById('agent_name_modal');
   const toCollectModal = document.getElementById('to-collect-modal');
-  const moreUiModal = document.getElementById('more_ui_modal');
-  const brandingSectionModal = document.getElementById('branding_section_modal');
-  const primaryColorModal = document.getElementById('primary_color_modal');
+  const primaryColorModal = document.getElementById('agent_language_modal');
   const primaryPreviewModal = document.getElementById('primary_preview_modal');
-  const secondaryColorModal = document.getElementById('secondary_color_modal');
-  const secondaryPreviewModal = document.getElementById('secondary_preview_modal');
 
   // Show Next button if Agent name filled
   agentNameModal.addEventListener('input', e => {
