@@ -8,17 +8,27 @@
   <style>
     @font-face{
       font-family: 'VinciSans';
-      src: url('https://civilpromaws.s3.eu-north-1.amazonaws.com/VinciSans-Regular.otf') format('opentype');
-      font-weight: 400;
+      src: url('https://civilpromaws.s3.eu-north-1.amazonaws.com/defibeoMAIN.otf') format('opentype');
+      font-weight: 100 !important;
       font-style: normal;
       font-display: swap;
     }
+
+        @font-face{
+      font-family: 'VinciBig';
+      src: url('https://civilpromaws.s3.eu-north-1.amazonaws.com/agent.otf') format('opentype');
+      font-weight: 100 !important;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    
 
     /* force the provided font everywhere */
     *,*::before,*::after{box-sizing:border-box;font-family:VinciSans,system-ui,-apple-system,'Segoe UI',Roboto,Arial!important}
 
     :root{
-      --bg: rgb(23,17,15);
+      --bg: #0049c6;
       --text: #ffffff;
       --muted: rgba(255,255,255,0.75);
       --muted-2: rgba(255,255,255,0.6);
@@ -35,7 +45,7 @@
     .wrap{max-width:1200px;margin:0 auto;padding:28px 18px}
 
     /* SECTION 1 */
-    .hero{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;max-width:1200px;margin:0 auto}
+    .hero{ display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;max-width:900px;margin:0 auto}
     .hero-left{max-width:var(--max)}
     .eyebrow{font-size:13px;color:var(--muted);margin-bottom:8px}
     h1{font-size:38px;line-height:1.02;margin:8px 0;color:var(--text)}
@@ -250,6 +260,15 @@
   color: white;
 }
 
+.helloagent {
+font-family: VinciBig !important; 
+font-weight: 100 !important;
+cursor: default; 
+font-size: 46px !important; 
+line-height: 52px !important;
+}
+
+
 
   </style>
 </head>
@@ -260,8 +279,8 @@
     <!-- SECTION 1 -->
     <section class="hero">
       <div class="hero-left">
-        <div class="eyebrow">AI Agents • Tailored for companies</div>
-        <h1>X Get the best-performing AI Agent for <span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
+        <div class="eyebrow">The #1 choice for Medium Business</div>
+        <h1  class="helloagent">Your mini AI-help agent with easy setting-up for <span class="typed-wrap"><span id="typed-target"></span><span class="typed-cursor" aria-hidden="true"></span></span></h1>
         <p class="lead">Deliver faster responses, automate repetitive tasks and scale your team's productivity with a customizable agent trained on your data.</p>
         <div class="cta-row">
 
