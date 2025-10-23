@@ -370,6 +370,9 @@ typed-target {
             <label>Describe your agent</label>
             <input id="agent_desc_modal" type="text" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
           </div>
+
+
+
           <div style="flex:1 1 48%">
             <label>Company size</label>
             <select id="company_size_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
@@ -395,55 +398,27 @@ typed-target {
             </select>
           </div>
 
-          <div style="flex:1 1 100%;display:flex;align-items:center;gap:10px;margin-top:6px;">
-            <input type="checkbox" id="more_ui_modal" style="width:20px;height:20px;">
-            <label for="more_ui_modal">More UI options</label>
+                    <div style="flex:1 1 48%">
+            <label>Agent Language</label>
+            <select id="agent_language_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+              <option>French</option>
+              <option>Less than 5</option>
+              <option>Less than 10</option>
+              <option>Less than 50</option>
+              <option>50 and more</option>
+            </select>
+          </div>
+          <div style="flex:1 1 48%">
+            <label>Interface Theme</label>
+            <select id="industry_modal" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:white;">
+              <option>Light</option>
+              <option>Dark</option>
+              <option>Purple Fruit</option>
+              <option>Maroon Forest</option>
+            </select>
           </div>
 
-          <!-- Branding & theme hidden -->
-          <div id="branding_section_modal" style="display:none;flex-direction:column;gap:12px;width:100%;margin-top:12px;">
-            <div style="display:flex;gap:8px;align-items:center;">
-              <div style="flex:0 0 72%">
-                <label>Primary color</label>
-                <input id="primary_color_modal" type="text" placeholder="#0ea5a4" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:transparent;color:white;">
-              </div>
-              <div style="flex:0 0 28%">
-                <div id="primary_preview_modal" style="height:44px;border-radius:8px;border:1px solid #e6e9ef;"></div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <div style="flex:0 0 72%">
-                <label>Secondary color</label>
-                <input id="secondary_color_modal" type="text" placeholder="#6366f1" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:transparent;color:white;">
-              </div>
-              <div style="flex:0 0 28%">
-                <div id="secondary_preview_modal" style="height:44px;border-radius:8px;border:1px solid #e6e9ef;"></div>
-              </div>
-            </div>
-            <div>
-              <label>Theme</label>
-              <div style="display:flex;gap:10px;margin-top:4px;">
-                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
-                  <input type="radio" name="theme_modal" value="light" checked style="display:none;">Light
-                </label>
-                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
-                  <input type="radio" name="theme_modal" value="dark" style="display:none;">Dark
-                </label>
-                <label style="flex:1;padding:14px;border-radius:12px;border:1px solid #e6e9ef;cursor:pointer;display:flex;align-items:center;gap:8px;">
-                  <input type="radio" name="theme_modal" value="fruit" style="display:none;">Fruit
-                </label>
-              </div>
-            </div>
-          </div>
 
-          <!-- Language -->
-          <div style="flex:1 1 100%;margin-top:6px;">
-            <label>Agent language</label>
-            <div style="display:flex;border:1px solid #e6e9ef;border-radius:10px;overflow:hidden;">
-              <button data-lang="en" class="lang-btn-modal" style="flex:1;padding:10px;background:transparent;color:white;border:0;">English</button>
-              <button data-lang="fr" class="lang-btn-modal" style="flex:1;padding:10px;background:transparent;color:white;border:0;">Français</button>
-            </div>
-          </div>
 
         </div>
 
