@@ -599,7 +599,7 @@ typed-target {
         </div>
 
         <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-          <button id="to-collect-modal" class="btn" style="display:none;background:#6f8cff;padding:10px 14px;border-radius:10px;color:white;font-weight:700;">Next →</button>
+          <button id="to-collect-modal" class="btn" style="display:none;background:#6f8cff;padding:10px 14px;border-radius:10px;color:white;font-weight:700;">Continue</button>
         </div>
       </div>
 
@@ -765,61 +765,74 @@ typed-target {
   // Initialize: all hidden except first step
   showPanel(0);
 
-  // -------------------------
-  // REGISTER step
-  // -------------------------
-  const agentNameModal = document.getElementById('agent_name_modal');
-  const toCollectModal = document.getElementById('to-collect-modal');
-  const primaryColorModal = document.getElementById('agent_language_modal');
-  const primaryPreviewModal = document.getElementById('primary_preview_modal');
+document.addEventListener('DOMContentLoaded', () => {
+  // récupérations sûres (peuvent être null si HTML différent)
+  const agentInput = document.getElementById('agent_name_modal');
+  const toCollectBtn = document.getElementById('to-collect-modal');
 
-  // Show Next button if Agent name filled
-  agentNameModal.addEventListener('input', e => {
-    const v = e.target.value.trim();
-    toCollectModal.style.display = v ? 'inline-block' : 'none';
-  });
+  // fallback si goToStep/showPanel sont définis ailleurs (global)
+  const hasGlobalGo = typeof window.goToStep === 'function';
+  const hasGlobalShow = typeof window.showPanel === 'function';
 
-  // More UI toggle
-  moreUiModal.addEventListener('change', ()=>{
-    brandingSectionModal.style.display = moreUiModal.checked ? 'flex' : 'none';
-  });
-
-  // Color previews
-  function updatePreview(input, preview){
-    const v = input.value.trim();
-    try{
-      if(v.startsWith('#') && (v.length===7||v.length===4)) preview.style.background=v;
-      else preview.style.background='transparent';
-    }catch(e){ preview.style.background='transparent'; }
+  // fallback minimal: expose simple showPanel/goToStep si absent
+  if (!hasGlobalShow || !hasGlobalGo) {
+    // build local panels list only if needed
+    const localPanels = Array.from(document.querySelectorAll('.step-panel'));
+    window.showPanel = window.showPanel || function(i){
+      localPanels.forEach(p => p.style.display = 'none');
+      if (localPanels[i]) localPanels[i].style.display = 'block';
+      // keep a simple state record if not present
+      window.stateModal = window.stateModal || { current: 0, completed: [] };
+      window.stateModal.current = i;
+      // update tiny top-steps UI if exists
+      try { if (typeof window.renderTop === 'function') window.renderTop(); } catch(e){}
+    };
+    window.goToStep = window.goToStep || function(i){ window.showPanel(i); };
+    // ensure initial panel displayed
+    window.showPanel(0);
   }
-  primaryColorModal.addEventListener('input', ()=>updatePreview(primaryColorModal, primaryPreviewModal));
-  secondaryColorModal.addEventListener('input', ()=>updatePreview(secondaryColorModal, secondaryPreviewModal));
 
-  // -------------------------
-// REGISTER step: Theme selection
-// -------------------------
-const themeLabels = Array.from(document.querySelectorAll('[name="theme_modal"]')).map(radio => radio.parentElement);
+  // Safety: if elements missing, log and stop early
+  if (!agentInput || !toCollectBtn) {
+    console.warn('Agent input or Continue button not found (agent_name_modal, to-collect-modal).');
+    return;
+  }
 
-themeLabels.forEach(label=>{
-  label.addEventListener('click', ()=>{
-    // décocher tous les radios
-    themeLabels.forEach(l=> l.classList.remove('selected'));
-    const radio = label.querySelector('input[type="radio"]');
-    radio.checked = true;
-    label.classList.add('selected');
+  // Show/hide Continue depending on value (on load and on input)
+  function updateContinueVisibility() {
+    const v = (agentInput.value || '').trim();
+    toCollectBtn.style.display = v ? 'inline-block' : 'none';
+  }
+  updateContinueVisibility();
+  agentInput.addEventListener('input', updateContinueVisibility);
+
+  // Click handler for Continue -> go to step 1
+  toCollectBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // mark completed step in global state if present
+    window.stateModal = window.stateModal || { current:0, completed:[] };
+    if (!Array.isArray(window.stateModal.completed)) window.stateModal.completed = [];
+    if (!window.stateModal.completed.includes(0)) window.stateModal.completed.push(0);
+
+    // call global navigation if available
+    if (typeof window.goToStep === 'function') {
+      window.goToStep(1);
+    } else if (typeof window.showPanel === 'function') {
+      window.showPanel(1);
+    } else {
+      // fallback manual: hide current panel and show next
+      const panels = Array.from(document.querySelectorAll('.step-panel'));
+      panels.forEach(p => p.style.display = 'none');
+      if (panels[1]) panels[1].style.display = 'block';
+    }
   });
-});
 
-// ajouter un style visuel pour sélection
-themeLabels.forEach(l=>{
-  if(l.querySelector('input[type="radio"]').checked) l.classList.add('selected');
-});
-
-  // Language toggle
-document.querySelectorAll('.lang-btn-modal').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.lang-btn-modal').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
+  // Accessibility: allow Enter on input to trigger continue if present
+  agentInput.addEventListener('keydown', (ev) => {
+    if ((ev.key === 'Enter' || ev.key === 'Return') && (agentInput.value || '').trim()) {
+      ev.preventDefault();
+      toCollectBtn.click();
+    }
   });
 });
 
