@@ -842,68 +842,140 @@ document.addEventListener('DOMContentLoaded', () => {
     goToStep(1);
   });
 
-  // -------------------------
-  // COLLECT step
-  // -------------------------
-  const resourcesModal = [];
-const resListModal = document.getElementById('resources_list_modal');
-const addResBtnModal = document.getElementById('add_res_modal'); // <== corriger l'id
-const saveResBtnModal = document.getElementById('save_res_modal'); // <-- correspond au HTML
-
-  function toggleSaveResourceBtnModal(){
-    if(resourcesModal.length>0) saveResBtnModal.classList.remove('hidden');
-    else saveResBtnModal.classList.add('hidden');
+ (function(){
+  // run when DOM ready (if already ready, runs immediately)
+  function ready(fn){
+    if(document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn);
   }
 
-  function renderResourcesModal(){
-    resListModal.innerHTML = '';
-    resourcesModal.forEach((r,idx)=>{
-      const item = document.createElement('div');
-      item.className='res-item';
-      const fav = `https://www.google.com/s2/favicons?sz=64&domain=${(new URL(r.url)).hostname}`;
-      item.innerHTML = `<img src="${fav}" alt="favicon" onerror="this.style.opacity=0.2">
-        <div style="flex:1">
-          <div style="font-weight:700"><a href="${r.url}" target="_blank">${r.name}</a></div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.7)">${r.url}</div>
-        </div>
-        <div class="cls">${r.class}</div>
-        <div><button data-idx="${idx}" class="btn ghost">Delete</button></div>`;
-      resListModal.appendChild(item);
+  ready(function(){
+    // elements (must match your HTML IDs)
+    const resName = document.getElementById('res_name_modal');
+    const resUrl  = document.getElementById('res_url_modal');
+    const resClass= document.getElementById('res_class_modal');
+    const addBtn  = document.getElementById('add_res_modal');
+    const listDiv = document.getElementById('resources_list_modal');
+    const saveBtn = document.getElementById('save_res_modal');
+    const backBtn = document.getElementById('back-to-register-modal');
+
+    if(!resName || !resUrl || !resClass || !addBtn || !listDiv || !saveBtn || !backBtn){
+      console.warn('COLLECT: some elements are missing. Check IDs (res_name_modal, res_url_modal, res_class_modal, add_res_modal, resources_list_modal, save_res_modal, back-to-register-modal).');
+      return;
+    }
+
+    // store resources in closure or window for persistency
+    window._resourcesModal = window._resourcesModal || [];
+
+    function renderResources(){
+      listDiv.innerHTML = '';
+      window._resourcesModal.forEach((r, idx) => {
+        const fav = (() => {
+          try { return `https://www.google.com/s2/favicons?sz=64&domain=${(new URL(r.url)).hostname}`; }
+          catch(e){ return ''; }
+        })();
+        const item = document.createElement('div');
+        item.className = 'res-item';
+        item.style.display = 'flex';
+        item.style.gap = '12px';
+        item.style.alignItems = 'center';
+        item.style.padding = '8px';
+        item.style.borderRadius = '8px';
+        item.style.border = '1px solid rgba(255,255,255,0.04)';
+        item.innerHTML = `
+          <img src="${fav}" alt="favicon" style="width:28px;height:28px;border-radius:6px;object-fit:cover" onerror="this.style.opacity=0.3">
+          <div style="flex:1">
+            <div style="font-weight:700"><a href="${r.url}" target="_blank" style="color:inherit;text-decoration:none">${r.name}</a></div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.7)">${r.url}</div>
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-right:8px">${r.class}</div>
+          <div><button data-idx="${idx}" type="button" class="res-del-btn" style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:white;cursor:pointer">Delete</button></div>
+        `;
+        listDiv.appendChild(item);
+      });
+
+      // attach delete listeners
+      Array.from(listDiv.querySelectorAll('.res-del-btn')).forEach(btn=>{
+        btn.onclick = function(e){
+          const i = Number(btn.dataset.idx);
+          if(Number.isNaN(i)) return;
+          window._resourcesModal.splice(i,1);
+          renderResources();
+          toggleSaveBtn();
+        };
+      });
+    }
+
+    function toggleSaveBtn(){
+      if(window._resourcesModal.length > 0){
+        saveBtn.style.display = 'inline-block';
+      } else {
+        saveBtn.style.display = 'none';
+      }
+    }
+
+    // add button click
+    addBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      const name = (resName.value || '').trim();
+      const url  = (resUrl.value || '').trim();
+      const cls  = (resClass.value || '').trim();
+
+      if(!name || !url){
+        return alert('Please provide name and url');
+      }
+      if(window._resourcesModal.length >= 30){
+        return alert('Max 30 resources allowed');
+      }
+      try { new URL(url); } catch(err){ return alert('URL is invalid'); }
+
+      window._resourcesModal.push({ name, url, class: cls });
+      resName.value = '';
+      resUrl.value = '';
+      renderResources();
+      toggleSaveBtn();
+      // focus back to name
+      resName.focus();
     });
-Array.from(resListModal.querySelectorAll('button')).forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    const i = Number(e.currentTarget.dataset.idx);
-    resourcesModal.splice(i, 1);
-    renderResourcesModal();
-    toggleSaveResBtnModal(); // <-- masque le bouton si plus rien
+
+    // save button: persist and go to next step
+    saveBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      if(window._resourcesModal.length === 0){
+        return alert('Add at least one resource to continue');
+      }
+      try { localStorage.setItem('finn_resources_modal', JSON.stringify(window._resourcesModal)); }
+      catch(e){ console.warn('Could not persist resources to localStorage', e); }
+      // mark completed then navigate to step 2
+      window.stateModal = window.stateModal || { current:0, completed:[] };
+      if(!window.stateModal.completed.includes(1)) window.stateModal.completed.push(1);
+      if(typeof window.goToStep === 'function') window.goToStep(2);
+      else if(typeof window.showPanel === 'function') window.showPanel(2);
+      else {
+        // fallback
+        const panels = Array.from(document.querySelectorAll('.step-panel'));
+        panels.forEach(p => p.style.display='none');
+        if(panels[2]) panels[2].style.display='block';
+      }
+    });
+
+    // back button -> go to REGISTER (step 0)
+    backBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      if(typeof window.goToStep === 'function') window.goToStep(0);
+      else if(typeof window.showPanel === 'function') window.showPanel(0);
+      else {
+        const panels = Array.from(document.querySelectorAll('.step-panel'));
+        panels.forEach(p => p.style.display='none');
+        if(panels[0]) panels[0].style.display='block';
+      }
+    });
+
+    // initial render (if resources preloaded)
+    renderResources();
+    toggleSaveBtn();
   });
-});
-    toggleSaveResourceBtnModal();
-  }
-
-addResBtnModal.addEventListener('click', (e) => {
-  e.preventDefault();
-  const name = document.getElementById('res_name_modal').value.trim();
-  const url = document.getElementById('res_url_modal').value.trim();
-  const cls = document.getElementById('res_class_modal').value;
-  if (!name || !url) return alert('Please provide name and url');
-  if (resourcesModal.length >= 30) return alert('Max 30 resources allowed');
-  try { new URL(url); } catch (err) { return alert('URL is invalid'); }
-
-  resourcesModal.push({ name, url, class: cls });
-  document.getElementById('res_name_modal').value = '';
-  document.getElementById('res_url_modal').value = '';
-  renderResourcesModal();
-  toggleSaveResBtnModal(); // <-- affiche le bouton
-});
-
-
-  saveResBtnModal.addEventListener('click', ()=>{
-    if(resourcesModal.length===0) return alert('Add at least one resource to continue');
-    localStorage.setItem('finn_resources_modal', JSON.stringify(resourcesModal));
-    stateModal.completed.push(1);
-    goToStep(2);
-  });
+})();
 
 // -------------------------
 // INFERENCES step
