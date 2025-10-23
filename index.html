@@ -324,8 +324,7 @@ typed-target {
 
 
 
-
-  .option-groupK {
+.option-groupK {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -359,7 +358,7 @@ typed-target {
   }
 
   /* état sélectionné */
-  .option-cardK.selected {
+  .option-cardK.selectedK {
     border-width:4px;
     border-color: #1177ff; /* bleu épais */
     box-shadow: 0 6px 18px rgba(17,119,255,0.12);
@@ -387,15 +386,14 @@ typed-target {
     transform: scale(1);
   }
 
-  .option-cardK.selected .option-radioK {
+  .option-cardK.selectedK .option-radioK {
     border-color:#1177ff;
   }
-  .option-cardK.selected .option-radioK .dotK {
+  .option-cardK.selectedK .option-radioK .dotK {
     background:#1177ff;
     transform: scale(1);
   }
 
-  /* texte */
   .option-labelK {
     font-size:28px;
     line-height:1;
@@ -403,7 +401,6 @@ typed-target {
     white-space:nowrap;
   }
 
-  /* pour thème sombre clair si besoin */
   .theme-darkK .option-cardK {
     color: white;
   }
@@ -412,7 +409,6 @@ typed-target {
     background: #fff;
   }
 
-  /* rendre le radio accessible (cache l'input réel) */
   .option-cardK input[type="radio"] {
     position: absolute;
     opacity: 0;
@@ -499,22 +495,22 @@ typed-target {
 
 
 
-          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+<div style="display:flex;gap:16px;flex-wrap:wrap;">
   <!-- Groupe 1 : Agent Language -->
   <div style="flex:1 1 48%">
     <label style="display:block;margin-bottom:8px;font-weight:600;">Agent Language</label>
-    <div class="option-groupK" id="agent_language_group">
-      <input type="hidden" name="agent_language" id="agent_language_value" value="French">
+    <div class="option-groupK" id="agent_language_groupK">
+      <input type="hidden" name="agent_languageK" id="agent_language_valueK" value="French">
       <div class="options-rowK">
-        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="French" data-group="agent_language">
-          <input type="radio" name="agent_language_radio" checked>
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="French" data-group="agent_languageK">
+          <input type="radio" name="agent_language_radioK" checked>
           <div class="option-radioK"><div class="dotK"></div></div>
           <div class="option-labelK">French</div>
         </div>
 
-        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="English" data-group="agent_language">
-          <input type="radio" name="agent_language_radio">
-          <div class="option-radioK"><div class="dot"></div></div>
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="English" data-group="agent_languageK">
+          <input type="radio" name="agent_language_radioK">
+          <div class="option-radioK"><div class="dotK"></div></div>
           <div class="option-labelK">English</div>
         </div>
       </div>
@@ -524,82 +520,77 @@ typed-target {
   <!-- Groupe 2 : Interface Theme -->
   <div style="flex:1 1 48%">
     <label style="display:block;margin-bottom:8px;font-weight:600;">Interface Theme</label>
-    <div class="option-groupK" id="interface_theme_group">
-      <input type="hidden" name="interface_theme" id="interface_theme_value" value="Light">
+    <div class="option-groupK" id="interface_theme_groupK">
+      <input type="hidden" name="interface_themeK" id="interface_theme_valueK" value="Light">
       <div class="options-rowK">
-        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="Light" data-group="interface_theme">
-          <input type="radio" name="interface_theme_radio" checked>
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="true" data-value="Light" data-group="interface_themeK">
+          <input type="radio" name="interface_theme_radioK" checked>
           <div class="option-radioK"><div class="dotK"></div></div>
           <div class="option-labelK">Light</div>
         </div>
 
-        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="Dark" data-group="interface_theme">
-          <input type="radio" name="interface_theme_radio">
-          <div class="option-radioK"><div class="dot"></div></div>
+        <div class="option-cardK" tabindex="0" role="radio" aria-checked="false" data-value="Dark" data-group="interface_themeK">
+          <input type="radio" name="interface_theme_radioK">
+          <div class="option-radioK"><div class="dotK"></div></div>
           <div class="option-labelK">Dark</div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <script>
   (function(){
-    // gestionnaire unique pour toutes les option-card
-    const cards = document.querySelectorAll('.option-card');
+    const cardsK = document.querySelectorAll('.option-cardK');
 
-    function selectCard(card) {
-      const group = card.getAttribute('data-group');
-      const value = card.getAttribute('data-value');
+    function selectCardK(cardK) {
+      const groupK = cardK.getAttribute('data-group');
+      const valueK = cardK.getAttribute('data-value');
 
       // désélectionner tous du groupe
-      document.querySelectorAll('.option-card[data-group="'+group+'"]').forEach(c => {
-        c.classList.remove('selected');
+      document.querySelectorAll('.option-cardK[data-group="'+groupK+'"]').forEach(c => {
+        c.classList.remove('selectedK');
         c.setAttribute('aria-checked','false');
         const r = c.querySelector('input[type="radio"]');
         if (r) r.checked = false;
       });
 
       // sélectionner le bon
-      card.classList.add('selected');
-      card.setAttribute('aria-checked','true');
-      const radio = card.querySelector('input[type="radio"]');
-      if (radio) radio.checked = true;
+      cardK.classList.add('selectedK');
+      cardK.setAttribute('aria-checked','true');
+      const radioK = cardK.querySelector('input[type="radio"]');
+      if (radioK) radioK.checked = true;
 
       // mettre à jour l'input caché correspondant
-      const hidden = document.getElementById(group + '_value');
-      if (hidden) hidden.value = value;
-      // optionnel : déclencher un événement custom si d'autres scripts doivent écouter
-      const event = new CustomEvent('optionChanged', { detail: { group, value } });
-      document.dispatchEvent(event);
+      const hiddenK = document.getElementById(groupK + '_valueK');
+      if (hiddenK) hiddenK.value = valueK;
+
+      // déclenchement d’un éventuel événement custom
+      const eventK = new CustomEvent('optionChangedK', { detail: { groupK, valueK } });
+      document.dispatchEvent(eventK);
     }
 
-    // initialiser l'état en fonction de checked si présent
-    document.querySelectorAll('.option-card').forEach(card => {
-      const radio = card.querySelector('input[type="radio"]');
-      if (radio && radio.checked) {
-        card.classList.add('selected');
-        card.setAttribute('aria-checked','true');
+    // initialisation
+    cardsK.forEach(cardK => {
+      const radioK = cardK.querySelector('input[type="radio"]');
+      if (radioK && radioK.checked) {
+        cardK.classList.add('selectedK');
+        cardK.setAttribute('aria-checked','true');
       }
     });
 
     // clic et clavier
-    cards.forEach(card => {
-      card.addEventListener('click', () => selectCard(card));
-      card.addEventListener('keydown', (e) => {
+    cardsK.forEach(cardK => {
+      cardK.addEventListener('click', () => selectCardK(cardK));
+      cardK.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          selectCard(card);
+          selectCardK(cardK);
         }
       });
     });
-
-    // Exemple: écouteur externe si tu veux réagir au changement
-    // document.addEventListener('optionChanged', (e) => {
-    //   console.log('changed', e.detail.group, e.detail.value);
-    // });
   })();
 </script>
-
 
 
 
