@@ -58,13 +58,30 @@ margin: 0 auto;
     h1{font-size:38px;line-height:1.02;margin:8px 0;color:var(--text)}
 
 .typed-wrap{
-  font-family: 'VinciBig' !important;
-  color: #16ffbd !important;
-  font-weight: 100 !important;
-  display:inline-block;position:relative;
+
+    font-family: 'VinciBig' !important;
+    color: #16ffbd !important;
+    border: 1px solid #1459cf;
+    padding: 12px 20px;
+    border-radius: 20px;
+    background: #0642a7;
+    font-weight: 100 !important;
+    display: inline-block;
+    position: relative;
 
 }
-    .typed-cursor{display:inline-block;width:2px;background:#16ffbd;margin-left:6px;height:1.05em;vertical-align:baseline;animation:blink 1s steps(2) infinite}
+    .typed-cursor {
+
+      display: inline-block;
+    width: 2.5px;
+    background: #16ffbd;
+    margin-left: 6px;
+    height: 40px;
+    margin-bottom: -4px;
+    vertical-align: baseline;
+    animation: blink 1s steps(2) infinite;
+
+    }
     @keyframes blink{50%{opacity:0}}
 
     p.lead{color:var(--muted);max-width:700px;margin-top:12px}
