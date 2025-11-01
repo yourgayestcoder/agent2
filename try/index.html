@@ -10,57 +10,77 @@
 
 <style>
   :root{
+    /* theme vars (default = Ice-like / neutral) */
+    --bg: #f6f7fb;
+    --accent: #2b6ef6;
+    --secondary: #1179cf;
+    --border: #e6e9ef;
+    --text: #111;
+    --link: #2b6ef6;
+
     --left-w: 30%;
     --right-w: 70%;
     --gap: 12px;
-    --bg: #f6f7fb;
-    --accent: #2b6ef6;
-    --muted: #6b7280;
     --card: #ffffff;
     font-family: Inter, system-ui, Arial, sans-serif;
   }
-  html,body{height:100%;margin:0;background:var(--bg);color:#111;}
+
+  /* General */
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);}
   .app{display:flex;gap:var(--gap);padding:18px;height:100vh;box-sizing:border-box;}
-  /* Left */
+  .panel{background:var(--card);border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(10,10,10,0.04);overflow:auto;border:1px solid var(--border);}
+
+  /* Buttons use accent / secondary */
+  .btn{padding:8px 10px;border-radius:6px;border:0;background:var(--accent);color:var(--text);cursor:pointer;font-weight:600;}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.06);}
+
+  /* Left column */
   .col-left{width:var(--left-w);display:flex;flex-direction:column;gap:12px;transition:all .18s ease;}
   .col-left.hidden{display:none;width:0;padding:0;margin:0;opacity:0}
-  .panel{background:var(--card);border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(10,10,10,0.04);overflow:auto;}
   .add-resource-form{display:flex;flex-direction:column;gap:8px;}
-  input[type="text"], textarea {padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;width:100%;box-sizing:border-box;}
+  input[type="text"], textarea {padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;width:100%;box-sizing:border-box;background:transparent;color:var(--text)}
   textarea{min-height:80px;resize:vertical;}
-  .btn{padding:8px 10px;border-radius:6px;border:0;background:var(--accent);color:white;cursor:pointer;font-weight:600;}
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(43,110,246,0.15);}
   .resource-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
-  .resource-item{border:1px dashed #e6e9ef;padding:8px;border-radius:6px;display:flex;flex-direction:column;gap:6px;}
+  .resource-item{border:1px dashed var(--border);padding:8px;border-radius:6px;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,0.03);}
   .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-  .tag{background:#eef2ff;color:var(--accent);padding:4px 8px;border-radius:999px;font-weight:600}
-  .small{font-size:13px;color:var(--muted)}
-  .hide-btn{background:#f3f4f6;color:#111;padding:6px 8px;border-radius:6px;border:1px solid #e6e9ef;cursor:pointer}
+  .tag{background:transparent;color:var(--link);padding:4px 8px;border-radius:999px;font-weight:600;border:1px solid var(--border)}
+  .small{font-size:13px;color:var(--text)}
+  .hide-btn{background:transparent;color:var(--text);padding:6px 8px;border-radius:6px;border:1px solid var(--border);cursor:pointer}
+
   /* Tag clouds */
   .tag-cloud{display:flex;flex-wrap:wrap;gap:8px}
-  .tag-item{padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;cursor:pointer;font-weight:600;font-size:13px}
-  .tag-item.sel{background:var(--accent);color:white;border-color:var(--accent)}
-  /* Right */
+  .tag-item{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;font-weight:600;font-size:13px;color:var(--text)}
+  .tag-item.sel{background:var(--accent);color:var(--text);border-color:var(--accent)}
+  .tag-item.ghost{background:transparent;color:var(--muted);border-style:dashed}
+
+  /* Right column & chat */
   .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width .18s ease;}
   .col-right.full{width:100%}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
   .tools-right{display:flex;gap:8px;align-items:center}
-  .panel-inline{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
+  .panel-inline{display:none;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card)}
+
   .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:hidden;position:relative}
   .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
-  .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
-  .message.user{align-self:flex-end;background:#e6f0ff;color:#03326a}
-  .message.agent{align-self:flex-start;background:#f3f4f6;color:#111}
-  .meta-small{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);background:var(--card);border:1px solid var(--border);}
+  .message.user{align-self:flex-end;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));border-color:var(--accent);color:var(--text)}
+  .message.agent{align-self:flex-start;background:var(--card);color:var(--text)}
+  .meta-small{font-size:12px;color:var(--text);opacity:0.8;margin-bottom:6px}
+
   /* Sticky controls */
   .controls-wrapper{position:sticky;bottom:12px;z-index:20;padding-top:8px;background:transparent}
-  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 -3px 12px rgba(10,10,10,0.03);width:100%;}
+  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 -3px 12px rgba(0,0,0,0.03);width:100%;border:1px solid var(--border)}
   .topic-cloud{display:flex;gap:8px;flex-wrap:wrap}
-  .link-small{font-size:13px;color:var(--accent);cursor:pointer;text-decoration:underline;background:none;border:0;padding:0}
-  /* modal */
+  .link-small{font-size:13px;color:var(--link);cursor:pointer;text-decoration:underline;background:none;border:0;padding:0}
+
+  /* Modal */
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:60}
-  .modal{background:white;border-radius:8px;padding:16px;max-width:90%;max-height:80%;overflow:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
-  .modal pre{white-space:pre-wrap;word-break:break-word;background:#fafafa;padding:12px;border-radius:6px;border:1px solid #eee;font-size:13px}
+  .modal{background:var(--card);border-radius:8px;padding:16px;max-width:90%;max-height:80%;overflow:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3);border:1px solid var(--border)}
+  .modal pre{white-space:pre-wrap;word-break:break-word;background:transparent;padding:12px;border-radius:6px;font-size:13px;color:var(--text)}
+
+  /* theme-specific subtle text-muted var */
+  .muted{color:rgba(0,0,0,0.5)}
+
   @media (max-width:900px){ .app{flex-direction:column} .col-left,.col-right{width:100%} .messages{padding-bottom:120px} }
 </style>
 </head>
@@ -71,7 +91,7 @@
   <div class="col-left hidden" id="leftCol">
     <div class="panel" id="resources-panel">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <h3 style="margin:0">Ressources</h3>
+        <h3 style="margin:0;color:var(--text)">Ressources</h3>
         <div>
           <button id="hideLeft" class="hide-btn" title="Masquer la colonne ressources">Masquer</button>
         </div>
@@ -125,7 +145,7 @@
   <div class="col-right full" id="rightCol">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px">
-        <h3 id="agentTitle" style="margin:0">Your New Agent</h3>
+        <h3 id="agentTitle" style="margin:0;color:var(--text)">Your New Agent</h3>
       </div>
 
       <div class="tools-right">
@@ -137,20 +157,20 @@
       </div>
     </div>
 
-    <!-- inline panels below topbar -->
+    <!-- Inline panels -->
     <div class="panel-inline" id="sharePanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Lien de partage</strong><button id="closeShare" class="btn ghost">Fermer</button>
+        <strong style="color:var(--text)">Lien de partage</strong><button id="closeShare" class="btn ghost">Fermer</button>
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-        <input id="shareLink" readonly type="text" value="https://example.local/agent/xxxx" style="flex:1"/>
+        <input id="shareLink" readonly type="text" value="https://example.local/agent/xxxx" style="flex:1;background:transparent;color:var(--text);border:1px solid var(--border);padding:6px;border-radius:6px"/>
         <button id="copyShare" class="btn">Copier</button>
       </div>
     </div>
 
     <div class="panel-inline" id="settingsPanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Réglages</strong><button id="closeSettings" class="btn ghost">Fermer</button>
+        <strong style="color:var(--text)">Réglages</strong><button id="closeSettings" class="btn ghost">Fermer</button>
       </div>
       <div style="margin-top:8px">
         <label class="small">Nom de l'agent</label>
@@ -159,7 +179,8 @@
         <div id="styleTags" class="tag-cloud">
           <div class="tag-item sel" data-value="Bronze">Bronze</div>
           <div class="tag-item" data-value="Ice">Ice</div>
-          <div class="tag-item" data-value="Plant">Plant</div>
+          <div class="tag-item" data-value="Funky">Funky</div>
+          <div class="tag-item" data-value="Serious Office">Serious Office</div>
         </div>
         <label class="small" style="margin-top:8px">Type</label>
         <div id="typeAgentTags" class="tag-cloud">
@@ -172,7 +193,7 @@
 
     <div class="panel-inline" id="subscriptionPanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Abonnement</strong><button id="closeSubscription" class="btn ghost">Fermer</button>
+        <strong style="color:var(--text)">Abonnement</strong><button id="closeSubscription" class="btn ghost">Fermer</button>
       </div>
       <div style="margin-top:8px">
         <p class="small">Statut : <strong id="subStatus">Free (mock)</strong></p>
@@ -181,15 +202,14 @@
       </div>
     </div>
 
-    <!-- chat area -->
+    <!-- chat -->
     <div class="panel chat-panel" id="chatPanel">
       <div class="messages" id="messages" aria-live="polite"></div>
-
       <div class="controls-wrapper">
         <div class="controls" role="region" aria-label="Saisie">
-          <input id="queryInput" type="text" placeholder="Posez votre question..." style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e9ef"/>
+          <input id="queryInput" type="text" placeholder="Posez votre question..." style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text)"/>
           <div style="display:flex;flex-direction:column;gap:6px;min-width:240px">
-            <div class="small">Topic (optionnel)</div>
+            <div class="small" style="color:var(--text)">Topic (optionnel)</div>
             <div id="topicCloud" class="topic-cloud">
               <div class="tag-item sel" data-value="">Aucun</div>
               <div class="tag-item" data-value="Help">Help</div>
@@ -210,14 +230,14 @@
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-hidden="true">
   <div class="modal" id="modalContent">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <h4 id="modalTitle">Source</h4><button id="closeModal" class="btn ghost">Fermer</button>
+      <h4 id="modalTitle" style="color:var(--text)">Source</h4><button id="closeModal" class="btn ghost">Fermer</button>
     </div>
-    <pre id="modalBody"></pre>
+    <pre id="modalBody" style="color:var(--text)"></pre>
   </div>
 </div>
 
 <script>
-/* Worker for PDF.js */
+/* PDF worker */
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.worker.min.js';
 
 /* State */
@@ -230,7 +250,69 @@ const state = {
   ui: { selectedType: 'note', selectedCategory: 'Help', selectedTopic: '', leftVisible: false }
 };
 
-/* Text utils */
+/* THEMES mapping */
+const THEMES = {
+  "Bronze": {
+    "--bg":"#5c1500",
+    "--accent":"#751b02",
+    "--secondary":"#ff7a4a",
+    "--border":"#824e3d",
+    "--text":"#000000",
+    "--link":"#ff7a4a",
+    "--card":"#f7efe8"
+  },
+  "Ice": {
+    "--bg":"#f5f6fa",
+    "--accent":"#cad0db",
+    "--secondary":"#1179cf",
+    "--border":"#a9b4c7",
+    "--text":"#3b4f73",
+    "--link":"#1179cf",
+    "--card":"#ffffff"
+  },
+  "Funky": {
+    "--bg":"#400d40",
+    "--accent":"#360c36",
+    "--secondary":"#1066a3",
+    "--border":"#664966",
+    "--text":"#cfc4cf",
+    "--link":"#1066a3",
+    "--card":"#2b122b"
+  },
+  "Serious Office": {
+    "--bg":"#4a3954",
+    "--accent":"#3a2a45",
+    "--secondary":"#02b1d9",
+    "--border":"#675d70",
+    "--text":"#d3ced6",
+    "--link":"#02b1d9",
+    "--card":"#3e3140"
+  }
+};
+
+/* Apply theme by setting CSS variables */
+function applyTheme(name){
+  const map = THEMES[name];
+  if(!map) return;
+  const root = document.documentElement;
+  Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
+  // also update some derived variables for button text contrast
+  // ensure .btn text color contrasts with accent: if accent is light -> use black text; else white
+  try{
+    const accent = map['--accent'] || getComputedStyle(root).getPropertyValue('--accent');
+    // very simple luminance check
+    function hexToRgb(hex){ hex = hex.replace('#',''); if(hex.length===3) hex = hex.split('').map(c=>c+c).join(''); const bigint = parseInt(hex,16); return {r:(bigint>>16)&255, g:(bigint>>8)&255, b: bigint&255}; }
+    function luminance(rgb){ return 0.2126*rgb.r + 0.7152*rgb.g + 0.0722*rgb.b; }
+    const rgb = hexToRgb(accent.trim());
+    const lum = luminance(rgb);
+    const btnText = (lum > 150) ? '#000' : '#fff';
+    root.style.setProperty('--btn-text', btnText);
+    // ensure .btn uses --btn-text
+    document.querySelectorAll('.btn').forEach(b => b.style.color = btnText);
+  }catch(e){ /* ignore */ }
+}
+
+/* Basic text utils */
 function normalizeText(s){ return (s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
 function tokenize(s){ return normalizeText(s).split(/[^a-z0-9àâäéèêëîïôöùûüç'-]+/).filter(t=>t && t.length>1); }
 function sentenceSplit(text){ const raw=(text||'').replace(/\r/g,' ').replace(/\n/g,' ').replace(/\s+/g,' '); const parts=raw.split(/(?<=[.?!])\s+/g); return parts.map(p=>p.trim()).filter(p=>p.length>10); }
@@ -238,7 +320,7 @@ function buildTf(tokens){ const tf={}; tokens.forEach(t=>tf[t]=(tf[t]||0)+1); co
 function scoreTf(tfQ, tfD){ let dot=0,nQ=0,nD=0; for(const k in tfQ) nQ+=tfQ[k]*tfQ[k]; for(const k in tfD) nD+=tfD[k]*tfD[k]; for(const k in tfQ) if(tfD[k]) dot+=tfQ[k]*tfD[k]; if(nQ===0||nD===0) return 0; return dot/(Math.sqrt(nQ)*Math.sqrt(nD)); }
 function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-/* Tag cloud wiring */
+/* Tag cloud setup */
 function setupTagCloud(id, initial, cb){
   const cont = document.getElementById(id);
   if(!cont) return;
@@ -250,20 +332,17 @@ function setupTagCloud(id, initial, cb){
     });
   });
   const sel = cont.querySelector('.tag-item[data-value="'+initial+'"]');
-  if(sel){
-    cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
-    sel.classList.add('sel');
-  }
+  if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
 }
 
-/* Resource management */
+/* Resources */
 function renderResources(){
   const cont = document.getElementById('resourceList');
   cont.innerHTML = '';
   state.resources.forEach(r=>{
     const div = document.createElement('div');
     div.className = 'resource-item';
-    div.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div style="flex:1"><strong>'+escapeHtml(r.title || r.type)+'</strong><div class="meta"><span class="tag">'+escapeHtml(r.category)+'</span><span>'+escapeHtml(r.type.toUpperCase())+'</span></div></div><div class="resource-controls"><button class="btn ghost" data-id="'+r.id+'" data-action="delete">Supprimer</button></div></div><div class="small">'+escapeHtml((r.rawText||'').substring(0,300))+( (r.rawText||'').length>300 ? '...' : '' )+'</div><div style="display:flex;gap:8px;align-items:center"><button class="link-small" data-id="'+r.id+'" data-action="view">Voir tout</button><button class="link-small" data-id="'+r.id+'" data-action="export">Exporter texte</button></div>';
+    div.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div style="flex:1"><strong style="color:var(--text)">'+escapeHtml(r.title || r.type)+'</strong><div class="meta"><span class="tag">'+escapeHtml(r.category)+'</span><span style="margin-left:8px;color:var(--text)">'+escapeHtml(r.type.toUpperCase())+'</span></div></div><div class="resource-controls"><button class="btn ghost" data-id="'+r.id+'" data-action="delete">Supprimer</button></div></div><div class="small" style="color:var(--text)">'+escapeHtml((r.rawText||'').substring(0,300))+( (r.rawText||'').length>300 ? '...' : '' )+'</div><div style="display:flex;gap:8px;align-items:center"><button class="link-small" data-id="'+r.id+'" data-action="view">Voir tout</button><button class="link-small" data-id="'+r.id+'" data-action="export">Exporter texte</button></div>';
     cont.appendChild(div);
   });
 }
@@ -283,7 +362,7 @@ function deleteResource(id){
   renderResources();
 }
 
-/* fetch URL and read PDF (PDF.js) */
+/* fetch / pdf */
 async function fetchUrlText(url){
   try{
     const resp = await fetch(url, {mode:'cors'});
@@ -296,9 +375,7 @@ async function fetchUrlText(url){
     } else {
       return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').';
     }
-  }catch(e){
-    return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e);
-  }
+  }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); }
 }
 
 async function readPdfFile(file){
@@ -311,24 +388,22 @@ async function readPdfFile(file){
       const txt = await page.getTextContent();
       const t = txt.items.map(it => it.str).join(' ');
       fullText += t + ' ';
-    }catch(err){
-      console.warn('pdf page read error',err);
-    }
+    }catch(err){ console.warn('pdf page read error',err); }
   }
   return fullText;
 }
 
-/* Chat & retrieval */
+/* Chat */
 function appendMessage(role, text, meta){
   const messagesDiv = document.getElementById('messages');
   const el = document.createElement('div');
   el.className = 'message ' + (role==='user' ? 'user' : 'agent');
   const timeS = new Date().toLocaleTimeString();
   const agentName = state.settings.name || 'Agent';
-  el.innerHTML = '<div class="meta-small">' + (role==='user' ? 'Vous' : agentName) + ' · ' + timeS + '</div><div class="msg-body">' + escapeHtml(text).replace(/\n/g,'<br>') + '</div>';
+  el.innerHTML = '<div class="meta-small">' + (role==='user' ? 'Vous' : agentName) + ' · ' + timeS + '</div><div class="msg-body" style="color:var(--text)">' + escapeHtml(text).replace(/\n/g,'<br>') + '</div>';
   if(role==='agent' && meta && meta.resources && meta.resources.length){
     const sr = document.createElement('div'); sr.style.marginTop='8px';
-    sr.innerHTML = '<div class="small">Sources citées :</div>';
+    sr.innerHTML = '<div class="small" style="color:var(--text)">Sources citées :</div>';
     const list = document.createElement('div'); list.style.display='flex'; list.style.gap='8px'; list.style.flexWrap='wrap'; list.style.marginTop='6px';
     meta.resources.forEach(rid=>{
       const r = state.resources.find(x=>x.id===rid);
@@ -341,15 +416,11 @@ function appendMessage(role, text, meta){
     sr.appendChild(list);
     el.appendChild(sr);
   }
-  // feedback + transfer
   if(role==='agent'){
     const actions = document.createElement('div'); actions.style.marginTop='8px';
-    const fb = document.createElement('button'); fb.className='link-small'; fb.textContent='Give feedback and improve accuracy';
-    fb.addEventListener('click', openFeedbackBlock);
-    const tr = document.createElement('button'); tr.className='link-small'; tr.style.marginLeft='8px'; tr.textContent='Transfer to a human';
-    tr.addEventListener('click', transferToHuman);
-    actions.appendChild(fb); actions.appendChild(tr);
-    el.appendChild(actions);
+    const fb = document.createElement('button'); fb.className='link-small'; fb.textContent='Give feedback and improve accuracy'; fb.addEventListener('click', openFeedbackBlock);
+    const tr = document.createElement('button'); tr.className='link-small'; tr.style.marginLeft='8px'; tr.textContent='Transfer to a human'; tr.addEventListener('click', transferToHuman);
+    actions.appendChild(fb); actions.appendChild(tr); el.appendChild(actions);
   }
   messagesDiv.appendChild(el);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -384,10 +455,10 @@ function retrieveAnswer(question, chosenTopic){
   return {found:true,answer,resources:resourceIds};
 }
 
-/* Handlers wiring - safe, no broken strings */
+/* Wiring after DOM ready */
 document.addEventListener('DOMContentLoaded', ()=>{
 
-  /* Tag clouds */
+  /* setup tag clouds and apply theme when style clicked */
   setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
     state.ui.selectedType = v;
     document.getElementById('inputNote').style.display = v==='note' ? 'block' : 'none';
@@ -396,10 +467,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
   setupTagCloud('categoryTags', state.ui.selectedCategory, (v)=> state.ui.selectedCategory = v);
   setupTagCloud('topicCloud', state.ui.selectedTopic || '', (v)=> state.ui.selectedTopic = v);
-  setupTagCloud('styleTags', state.settings.style, (v)=> state.settings.style = v);
+  // style tags: when clicked, update theme immediately
+  setupTagCloud('styleTags', state.settings.style, (v)=> { state.settings.style = v; applyTheme(v); });
   setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type = v);
 
-  /* Panels */
+  /* panels */
   const sharePanel = document.getElementById('sharePanel');
   const settingsPanel = document.getElementById('settingsPanel');
   const subscriptionPanel = document.getElementById('subscriptionPanel');
@@ -432,12 +504,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('closeSubscription').addEventListener('click', ()=> subscriptionPanel.style.display='none');
   document.getElementById('upgradeBtn').addEventListener('click', ()=> alert('Mock: upgrade options'));
 
-  /* Reset top */
+  /* Reset */
   document.getElementById('resetChatTop').addEventListener('click', ()=> {
     if(confirm('Réinitialiser la discussion ?')){ document.getElementById('messages').innerHTML=''; state.messages=[]; }
   });
 
-  /* Modify / Hide left column */
+  /* Modify / Hide left */
   const leftCol = document.getElementById('leftCol');
   const rightCol = document.getElementById('rightCol');
   const modifyBtn = document.getElementById('modifyBtn');
@@ -448,9 +520,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   modifyBtn.addEventListener('click', showLeft);
   hideLeftBtn.addEventListener('click', hideLeft);
-
-  /* initial state: left hidden */
-  hideLeft();
+  hideLeft(); // default hidden
 
   /* Add resource */
   document.getElementById('addResBtn').addEventListener('click', async ()=>{
@@ -472,10 +542,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         stub.sentences = sentenceSplit(text).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
         stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
         renderResources();
-      }catch(err){
-        stub.rawText = 'Erreur: '+(err.message||err);
-        renderResources();
-      }
+      }catch(err){ stub.rawText = 'Erreur: '+(err.message||err); renderResources(); }
       document.getElementById('resUrl').value='';
     } else if(type==='pdf'){
       const fileInput = document.getElementById('resPdfFile');
@@ -488,10 +555,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
         stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
         renderResources();
-      }catch(err){
-        stub.rawText = 'Erreur PDF: '+(err.message||err);
-        renderResources();
-      }
+      }catch(err){ stub.rawText = 'Erreur PDF: '+(err.message||err); renderResources(); }
       fileInput.value='';
     }
   });
@@ -511,7 +575,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resPdfFile').value=''; });
 
   /* send */
-  document.getElementById('sendBtn').addEventListener('click', async ()=> {
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
     const q = document.getElementById('queryInput').value.trim();
     if(!q) return;
     appendMessage('user', q);
@@ -522,20 +586,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
   document.getElementById('queryInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); } });
 
-  /* feedback placeholder handlers */
-  document.querySelectorAll('#ratingRow .rating-star').forEach(el=>{ el.addEventListener('click', ()=> { const v=el.dataset.v; document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.toggle('sel', s.dataset.v<=v)); }); });
-  document.getElementById('saveSettings').addEventListener('click', ()=> {
+  /* settings save (also ensure theme applied) */
+  document.getElementById('saveSettings').addEventListener('click', ()=>{
     state.settings.name = document.getElementById('agentName').value || state.settings.name;
     document.getElementById('agentTitle').textContent = state.settings.name;
+    // ensure style applied (styleTags' click also calls applyTheme, but save ensures final)
+    applyTheme(state.settings.style);
     alert('Paramètres sauvegardés localement (temp).');
-    settingsPanel.style.display='none';
+    document.getElementById('settingsPanel').style.display='none';
   });
 
-  /* modal */
+  /* modal close handlers */
   document.getElementById('closeModal').addEventListener('click', ()=> { document.getElementById('modalBackdrop').style.display='none'; });
   document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display='none'; });
 
-}); // DOMContentLoaded
+  /* initial theme apply */
+  applyTheme(state.settings.style);
+
+}); // end DOMContentLoaded
 
 /* Modal open */
 function openModalForResource(id){
@@ -543,10 +611,10 @@ function openModalForResource(id){
   if(!r) return;
   document.getElementById('modalTitle').textContent = (r.title || r.type) + ' — ' + (r.category || '');
   document.getElementById('modalBody').textContent = r.rawText || '';
-  const mb = document.getElementById('modalBackdrop'); mb.style.display='flex';
+  const mb = document.getElementById('modalBackdrop'); mb.style.display = 'flex';
 }
 
-/* Feedback & transfer (simple) */
+/* feedback + transfer simple */
 function openFeedbackBlock(){ const fb = document.getElementById('feedbackInsert'); if(fb) fb.style.display='block'; }
 function transferToHuman(){ appendMessage('agent', 'Transfert demandé : un humain sera contacté (simulation).'); }
 
