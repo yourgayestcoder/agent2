@@ -73,7 +73,7 @@
 
   /* controls stuck at bottom of chat-panel volume */
   .controls-wrapper{position:sticky;bottom:12px;z-index:20;padding-top:8px;background:transparent}
-  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 -3px 12px rgba(10,10,10,0.03);}
+  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 -3px 12px rgba(10,10,10,0.03);width:100%;}
   .topic-cloud{display:flex;gap:8px;flex-wrap:wrap}
   .link-small{font-size:13px;color:var(--accent);cursor:pointer;text-decoration:underline;background:none;border:0;padding:0}
   .rating-row{display:flex;gap:8px;align-items:center}
@@ -102,7 +102,7 @@
 <body>
 <div class="app" id="appRoot">
 
-  <!-- LEFT column -->
+  <!-- LEFT column (hidden by default) -->
   <div class="col-left hidden" id="leftCol">
     <div class="panel" id="resources-panel">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -171,9 +171,7 @@
         </div>
       </div>
 
-      <div class="resource-list" id="resourceList" aria-live="polite">
-        <!-- resources inserted here -->
-      </div>
+      <div class="resource-list" id="resourceList" aria-live="polite"></div>
     </div>
   </div>
 
@@ -193,20 +191,20 @@
       </div>
     </div>
 
-    <!-- panels -->
-    <div class="panel-inline" id="sharePanel">
+    <!-- Inline panels (appear below topbar) -->
+    <div class="panel-inline" id="sharePanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><strong>Lien de partage (temporaire)</strong></div>
         <div><button id="closeShare" class="btn ghost">Fermer</button></div>
       </div>
-      <p class="small" style="margin-top:8px">Copiez ce lien pour partager : </p>
+      <p class="small" style="margin-top:8px">Copiez ce lien pour partager :</p>
       <div style="display:flex;gap:8px;align-items:center">
         <input id="shareLink" readonly type="text" value="https://example.local/agent/xxxx" style="flex:1"/>
         <button id="copyShare" class="btn">Copier</button>
       </div>
     </div>
 
-    <div class="panel-inline" id="settingsPanel">
+    <div class="panel-inline" id="settingsPanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><strong>Réglages de l'agent</strong></div>
         <div><button id="closeSettings" class="btn ghost">Fermer</button></div>
@@ -235,7 +233,7 @@
       </div>
     </div>
 
-    <div class="panel-inline" id="subscriptionPanel">
+    <div class="panel-inline" id="subscriptionPanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><strong>Abonnement</strong></div>
         <div><button id="closeSubscription" class="btn ghost">Fermer</button></div>
@@ -252,9 +250,7 @@
 
     <!-- Chat panel -->
     <div class="panel chat-panel" id="chatPanel">
-      <div class="messages" id="messages" aria-live="polite">
-        <!-- messages go here -->
-      </div>
+      <div class="messages" id="messages" aria-live="polite"></div>
 
       <!-- sticky controls wrapper at bottom of chat-panel -->
       <div class="controls-wrapper">
@@ -290,12 +286,11 @@
 </div>
 
 <script>
-/* PDF worker */
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.worker.min.js';
 
 /* ---------- state ---------- */
 const state = {
-  resources: [], // no demo resources
+  resources: [],
   inverted: {},
   messages: [],
   resourceCounter: 0,
@@ -308,7 +303,7 @@ const state = {
     selectedType: 'note',
     selectedCategory: 'Help',
     selectedTopic: '',
-    leftVisible: false // left hidden by default
+    leftVisible: false
   }
 };
 
@@ -332,12 +327,8 @@ function setupTagCloud(containerId, initialValue, onChange){
       onChange && onChange(val);
     });
   });
-  // initial selection if exists
   const sel = cont.querySelector(`.tag-item[data-value="${initialValue}"]`);
-  if(sel){
-    cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
-    sel.classList.add('sel');
-  }
+  if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
 }
 
 /* ---------- resource management ---------- */
@@ -376,7 +367,6 @@ function addResource({type, title, category, rawText, meta}){
   const sentences = sentenceSplit(rawText || '').map(s=>{ const tokens = tokenize(s); return {text:s, tokens, tf: buildTf(tokens)}; }).filter(x=>x.tokens.length>0);
   const resource = {id,type,title: title || (type==='url'?meta.url:type),category,rawText,meta,sentences};
   state.resources.push(resource);
-  // index tokens
   resource.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(resource.id); }));
   renderResources();
   return resource;
@@ -421,7 +411,8 @@ function appendMessage(role, text, meta = {}) {
   const el = document.createElement('div');
   el.className = 'message ' + (role==='user'?'user':'agent');
   const timeS = new Date().toLocaleTimeString();
-  el.innerHTML = `<div class="meta-small">${role==='user'?'Vous':'${state.settings.name}'} · ${timeS}</div><div class="msg-body">${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
+  const agentName = state.settings.name || 'Agent';
+  el.innerHTML = `<div class="meta-small">${role==='user'?'Vous':agentName} · ${timeS}</div><div class="msg-body">${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
 
   if(role==='agent'){
     const actions = document.createElement('div');
@@ -537,7 +528,7 @@ setupTagCloud('topicCloud', state.ui.selectedTopic || '', (v)=> state.ui.selecte
 setupTagCloud('styleTags', state.settings.style, (v)=> state.settings.style=v);
 setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type=v);
 
-/* Panels show/hide utilities */
+/* Panels show/hide */
 const sharePanel = document.getElementById('sharePanel');
 const settingsPanel = document.getElementById('settingsPanel');
 const subscriptionPanel = document.getElementById('subscriptionPanel');
@@ -574,7 +565,7 @@ document.getElementById('resetChatTop').addEventListener('click', ()=>{
   }
 });
 
-/* modify button to show left column */
+/* modify/hide left column */
 const leftCol = document.getElementById('leftCol');
 const rightCol = document.getElementById('rightCol');
 const modifyBtn = document.getElementById('modifyBtn');
@@ -593,13 +584,13 @@ function hideLeft(){
   modifyBtn.style.display = 'inline-block';
 }
 
-/* initial state: left hidden by default */
+/* initial: hide left */
 hideLeft();
 
 modifyBtn.addEventListener('click', ()=> showLeft());
 hideLeftBtn.addEventListener('click', ()=> hideLeft());
 
-/* Add resource */
+/* Add resource handlers */
 document.getElementById('addResBtn').addEventListener('click', async ()=>{
   const type = state.ui.selectedType;
   const category = state.ui.selectedCategory;
@@ -645,7 +636,7 @@ document.getElementById('addResBtn').addEventListener('click', async ()=>{
   }
 });
 
-/* resource list click handling */
+/* resource list events */
 document.getElementById('resourceList').addEventListener('click', (e)=>{
   const btn = e.target.closest('button');
   if(!btn) return;
@@ -656,7 +647,7 @@ document.getElementById('resourceList').addEventListener('click', (e)=>{
   else if(action==='export'){ const r = state.resources.find(x=>x.id===id); if(!r) return; const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = (r.title||r.id)+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 });
 
-/* clear form */
+/* clear resource form */
 document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value = ''; document.getElementById('resContent').value = ''; document.getElementById('resUrl').value = ''; document.getElementById('resPdfFile').value = ''; });
 
 /* send and enter */
@@ -668,7 +659,7 @@ document.querySelectorAll('#ratingRow .rating-star').forEach(el=>{ el.addEventLi
 document.getElementById('saveFeedbackRes').addEventListener('click', ()=>{ const ratingEl = Array.from(document.querySelectorAll('#ratingRow .rating-star')).find(s=>s.classList.contains('sel')); const rating = ratingEl ? parseInt(ratingEl.dataset.v,10) : null; const content = document.getElementById('feedbackNewResource').value.trim(); if(!rating && !content){ if(!confirm('Vous n\\'avez pas donné de note ni ajouté de ressource. Continuer ?')) return; } if(content){ addResource({type:'note', title:'Feedback resource', category:'Other', rawText:content, meta:{via:'feedback'}}); } closeFeedbackBlock(); alert('Merci pour votre feedback !'); });
 document.getElementById('cancelFeedback').addEventListener('click', ()=>closeFeedbackBlock());
 
-/* modal handling */
+/* modal */
 function openModalForResource(id){
   const r = state.resources.find(x=>x.id===id);
   if(!r) return;
@@ -681,7 +672,7 @@ function openModalForResource(id){
 document.getElementById('closeModal').addEventListener('click', ()=>{ const mb = document.getElementById('modalBackdrop'); mb.style.display = 'none'; mb.setAttribute('aria-hidden','true'); });
 document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display = 'none'; });
 
-/* Save settings */
+/* save settings */
 document.getElementById('saveSettings').addEventListener('click', ()=>{
   state.settings.name = document.getElementById('agentName').value || state.settings.name;
   document.getElementById('agentTitle').textContent = state.settings.name;
@@ -689,10 +680,7 @@ document.getElementById('saveSettings').addEventListener('click', ()=>{
   settingsPanel.style.display = 'none';
 });
 
-/* share copy */
-document.getElementById('copyShare').addEventListener('click', ()=> { const link = document.getElementById('shareLink'); link.select(); link.setSelectionRange(0,99999); document.execCommand('copy'); alert('Lien copié.'); });
-
-/* expose for debug */
+/* expose debug */
 window.miniIA = { state, addResource, retrieveAnswer, renderResources };
 
 </script>
