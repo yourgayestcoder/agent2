@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mini Chat IA local — Ressources user-driven (v2)</title>
+<title>Mini Chat IA local — Ressources user-driven (v3)</title>
 
 <!-- PDF.js (pour lecture de PDF côté client) -->
 <script src="https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.min.js"></script>
@@ -22,14 +22,15 @@
 
   html,body{height:100%;margin:0;background:var(--bg);color:#111;}
   .app{
-    display:flex;gap:var(--gap);padding:18px;height:100vh;box-sizing:border-box;
+    display:flex;gap:var(--gap);padding:18px;height:100vh;box-sizing:border-box;transition:all .22s ease;
   }
 
   /* Left column (resources) */
   .col-left{
     width:var(--left-w);
-    display:flex;flex-direction:column;gap:12px;
+    display:flex;flex-direction:column;gap:12px;transition:width .22s ease, opacity .2s ease;
   }
+  .col-left.hidden{display:none;width:0;padding:0;margin:0;opacity:0}
   .panel{
     background:var(--card);border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(10,10,10,0.04);
     overflow:auto;
@@ -56,12 +57,14 @@
   .tag-item.ghost{background:transparent;color:var(--muted);border-style:dashed}
 
   /* Right column (chat) */
-  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;}
+  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width .22s ease;}
+  .col-right.full{width:100%}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
   .share-panel{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
   .settings-panel{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
+  .subscription-panel{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
   .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:auto;position:relative}
-  .messages{display:flex;flex-direction:column;gap:12px;padding-bottom:90px} /* padding-bottom so messages not hidden under sticky controls */
+  .messages{display:flex;flex-direction:column;gap:12px;padding-bottom:90px} /* bottom padding so sticky controls don't cover */
   .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
   .message.user{align-self:flex-end;background:#e6f0ff;color:#03326a}
   .message.agent{align-self:flex-start;background:#f3f4f6;color:#111}
@@ -84,6 +87,10 @@
   .modal h4{margin:0 0 8px 0}
   .modal pre{white-space:pre-wrap;word-break:break-word;background:#fafafa;padding:12px;border-radius:6px;border:1px solid #eee;font-size:13px}
 
+  /* small utility */
+  .top-left-controls{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .hide-btn{background:#f3f4f6;color:#111;padding:6px 8px;border-radius:6px;border:1px solid #e6e9ef;cursor:pointer}
+
   /* responsive */
   @media (max-width:900px){
     .app{flex-direction:column}
@@ -93,12 +100,17 @@
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="appRoot">
 
   <!-- LEFT: Resources -->
-  <div class="col-left">
+  <div class="col-left" id="leftCol">
     <div class="panel" id="resources-panel">
-      <h3>Ressources (ajouter / gérer)</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0">Ressources (ajouter / gérer)</h3>
+        <div class="top-left-controls">
+          <button id="hideLeft" class="hide-btn" title="Masquer la colonne ressources">Masquer</button>
+        </div>
+      </div>
 
       <form id="addForm" class="add-resource-form" onsubmit="return false;">
         <label class="small">Type</label>
@@ -168,7 +180,7 @@
   </div>
 
   <!-- RIGHT: Chat -->
-  <div class="col-right">
+  <div class="col-right" id="rightCol">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:8px">
         <h3 style="margin:0">Mini Chat IA (local)</h3>
@@ -176,8 +188,12 @@
       </div>
 
       <div style="display:flex;gap:8px;align-items:center">
+        <!-- This button appears only when left col is hidden -->
+        <button id="modifyBtn" class="btn ghost" style="display:none">Modifier</button>
+
         <button id="shareBtn" class="btn ghost">Partager</button>
         <button id="settingsBtn" class="btn ghost">Réglages</button>
+        <button id="subscriptionBtn" class="btn ghost">Abonnement</button>
       </div>
     </div>
 
@@ -218,6 +234,21 @@
       </div>
     </div>
 
+    <div class="subscription-panel panel" id="subscriptionPanel" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Abonnement</strong></div>
+        <div><button id="closeSubscription" class="btn ghost">Fermer</button></div>
+      </div>
+      <div style="margin-top:8px">
+        <p class="small">Statut : <strong id="subStatus">Basique (mock)</strong></p>
+        <p class="small">Renouvellement : <strong id="subRenew">2025-12-01</strong></p>
+        <p class="small">Plan : <strong id="subPlan">Free / Dev</strong></p>
+        <div style="margin-top:12px">
+          <button id="upgradeBtn" class="btn">Voir options de mise à niveau</button>
+        </div>
+      </div>
+    </div>
+
     <div class="panel chat-panel" id="chatPanel">
       <div class="messages" id="messages">
         <!-- messages -->
@@ -228,7 +259,7 @@
         <div style="display:flex;flex-direction:column;gap:6px;min-width:260px">
           <div class="small">Topic (optionnel)</div>
           <div id="topicCloud" class="topic-cloud">
-            <div class="tag-item" data-value="">Aucun</div>
+            <div class="tag-item sel" data-value="">Aucun</div>
             <div class="tag-item" data-value="Help">Help</div>
             <div class="tag-item" data-value="Knowledge">Knowledge</div>
             <div class="tag-item" data-value="Process">Process</div>
@@ -262,7 +293,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.9.179/b
 
 /* ---------- state ---------- */
 const state = {
-  resources: [], // {id, type, title, category, rawText, meta:{url,fileName}, sentences: [...]}
+  resources: [],
   inverted: {},
   messages: [],
   resourceCounter: 0,
@@ -275,39 +306,16 @@ const state = {
     selectedType: 'note',
     selectedCategory: 'Help',
     selectedTopic: '',
+    leftVisible: true
   }
 };
 
-/* ---------- utilitaires texte/simple tokenizer ---------- */
-function normalizeText(s){
-  return (s||'').trim().replace(/\s+/g,' ').toLowerCase();
-}
-function tokenize(s){
-  return normalizeText(s).split(/[^a-z0-9àâäéèêëîïôöùûüç'-]+/).filter(t=>t && t.length>1);
-}
-function sentenceSplit(text){
-  const raw = (text||'').replace(/\r/g,' ').replace(/\n/g,' ').replace(/\s+/g,' ');
-  const parts = raw.split(/(?<=[.?!])\s+/g);
-  return parts.map(p=>p.trim()).filter(p=>p.length>10);
-}
-function buildTf(tokens){
-  const tf = {};
-  tokens.forEach(t=>tf[t]=(tf[t]||0)+1);
-  const L = tokens.length || 1;
-  Object.keys(tf).forEach(k=>tf[k]=tf[k]/L);
-  return tf;
-}
-function scoreTf(tfQ, tfDoc){
-  let dot = 0;
-  let normQ = 0, normD = 0;
-  for(const k in tfQ){ normQ += tfQ[k]*tfQ[k]; }
-  for(const k in tfDoc){ normD += tfDoc[k]*tfDoc[k]; }
-  for(const k in tfQ){
-    if(tfDoc[k]) dot += tfQ[k]*tfDoc[k];
-  }
-  if(normQ===0 || normD===0) return 0;
-  return dot / (Math.sqrt(normQ)*Math.sqrt(normD));
-}
+/* ---------- text utils ---------- */
+function normalizeText(s){ return (s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
+function tokenize(s){ return normalizeText(s).split(/[^a-z0-9àâäéèêëîïôöùûüç'-]+/).filter(t=>t && t.length>1); }
+function sentenceSplit(text){ const raw = (text||'').replace(/\r/g,' ').replace(/\n/g,' ').replace(/\s+/g,' '); const parts = raw.split(/(?<=[.?!])\s+/g); return parts.map(p=>p.trim()).filter(p=>p.length>10); }
+function buildTf(tokens){ const tf = {}; tokens.forEach(t=>tf[t]=(tf[t]||0)+1); const L = tokens.length || 1; Object.keys(tf).forEach(k=>tf[k]=tf[k]/L); return tf; }
+function scoreTf(tfQ, tfDoc){ let dot=0,normQ=0,normD=0; for(const k in tfQ) normQ+=tfQ[k]*tfQ[k]; for(const k in tfDoc) normD+=tfDoc[k]*tfDoc[k]; for(const k in tfQ) if(tfDoc[k]) dot+=tfQ[k]*tfDoc[k]; if(normQ===0||normD===0) return 0; return dot/(Math.sqrt(normQ)*Math.sqrt(normD)); }
 
 /* ---------- DOM helpers for tag clouds ---------- */
 function setupTagCloud(containerId, initialValue, onChange){
@@ -315,19 +323,14 @@ function setupTagCloud(containerId, initialValue, onChange){
   if(!cont) return;
   cont.querySelectorAll('.tag-item').forEach(el=>{
     el.addEventListener('click', ()=>{
-      // deselect siblings
       cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
       el.classList.add('sel');
       const val = el.dataset.value;
       onChange && onChange(val);
     });
   });
-  // set initial
   const selected = cont.querySelector(`.tag-item[data-value="${initialValue}"]`);
-  if(selected) {
-    cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
-    selected.classList.add('sel');
-  }
+  if(selected){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); selected.classList.add('sel'); }
 }
 
 /* ---------- resource management ---------- */
@@ -363,32 +366,19 @@ function renderResources(){
   });
 }
 
-/* index resource */
 function addResource({type, title, category, rawText, meta}){
   const id = 'r'+(++state.resourceCounter);
-  const sentences = sentenceSplit(rawText || '').map(s=>{
-    const tokens = tokenize(s);
-    return {text:s, tokens, tf: buildTf(tokens)};
-  }).filter(x=>x.tokens.length>0);
+  const sentences = sentenceSplit(rawText || '').map(s=>{ const tokens = tokenize(s); return {text:s, tokens, tf: buildTf(tokens)}; }).filter(x=>x.tokens.length>0);
   const resource = {id,type,title: title || (type==='url'?meta.url:type),category,rawText,meta,sentences};
   state.resources.push(resource);
   renderResources();
-  // build inverted (simple)
-  resource.sentences.forEach(s=>{
-    s.tokens.forEach(t=>{
-      if(!state.inverted[t]) state.inverted[t]=new Set();
-      state.inverted[t].add(resource.id);
-    });
-  });
+  resource.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(resource.id); }));
   return resource;
 }
 
-function deleteResource(id){
-  state.resources = state.resources.filter(r=>r.id!==id);
-  renderResources();
-}
+function deleteResource(id){ state.resources = state.resources.filter(r=>r.id!==id); renderResources(); }
 
-/* fetch URL */
+/* fetch url and pdf reading (same as before) */
 async function fetchUrlText(url){
   try{
     const resp = await fetch(url, {mode:'cors'});
@@ -405,8 +395,6 @@ async function fetchUrlText(url){
     return `ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ${e.message||e}`;
   }
 }
-
-/* read pdf */
 async function readPdfFile(file){
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
@@ -417,9 +405,7 @@ async function readPdfFile(file){
       const txt = await page.getTextContent();
       const t = txt.items.map(it => it.str).join(' ');
       fullText += t + ' ';
-    }catch(err){
-      console.warn('pdf page read error',err);
-    }
+    }catch(err){ console.warn('pdf page read error',err); }
   }
   return fullText;
 }
@@ -430,10 +416,8 @@ function appendMessage(role, text, meta = {}) {
   const el = document.createElement('div');
   el.className = 'message ' + (role==='user'?'user':'agent');
   const timeS = new Date().toLocaleTimeString();
-  // prevent HTML injection from content, but allow meta interactive parts appended below
   el.innerHTML = `<div class="meta-small">${role==='user'?'Vous':'Agent IA'} · ${timeS}</div><div class="msg-body">${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
 
-  // if agent: add feedback small link & transfer buttons and clickable sources if provided in meta
   if(role==='agent'){
     const actions = document.createElement('div');
     actions.style.marginTop = '8px';
@@ -443,7 +427,6 @@ function appendMessage(role, text, meta = {}) {
     actions.querySelector('[data-action="feedback"]').addEventListener('click',()=>openFeedbackBlock());
     actions.querySelector('[data-action="transfer"]').addEventListener('click',()=>transferToHuman());
 
-    // append sources if meta.snippets or meta.resources
     const uniq = meta.resources ? Array.from(new Set(meta.resources)) : [];
     if(uniq.length){
       const sr = document.createElement('div');
@@ -469,7 +452,6 @@ function appendMessage(role, text, meta = {}) {
   state.messages.push({role,text,meta,ts:Date.now()});
 }
 
-/* retrieval: similar to previous version but returns resource ids for cited sources */
 function retrieveAnswer(question, chosenTopic){
   const qnorm = normalizeText(question || '');
   const qtokens = tokenize(qnorm);
@@ -502,28 +484,21 @@ function retrieveAnswer(question, chosenTopic){
     }
   }
 
-  // pick unique resource ids used
   const resourceIds = [...new Set(snippets.map(s=>s.resource.id))];
 
-  // create textual answer
   let answer = '';
   if(chosenTopic){
     answer += `Contexte (topic demandé: ${chosenTopic}). Réponse basée sur les ressources fournies :\n\n`;
   } else {
     answer += `Réponse basée uniquement sur les ressources disponibles :\n\n`;
   }
-  snippets.forEach((s, i)=>{
-    answer += `- ${s.text}\n`;
-  });
-  answer += `\nSources citées : ${resourceIds.map(id=> {
-    const r = state.resources.find(x=>x.id===id);
-    return r ? (r.title || r.type) : id;
-  }).join('; ')}.`;
+  snippets.forEach((s,i)=>{ answer += `- ${s.text}\n`; });
+  answer += `\nSources citées : ${resourceIds.map(id=> { const r = state.resources.find(x=>x.id===id); return r ? (r.title || r.type) : id; }).join('; ')}.`;
 
   return {found:true, bestScore, snippets, answer, resources: resourceIds};
 }
 
-/* sendHandler */
+/* ---------- send handler ---------- */
 async function handleSend(){
   const qEl = document.getElementById('queryInput');
   const q = qEl.value.trim();
@@ -541,68 +516,41 @@ async function handleSend(){
   appendMessage('agent', res.answer, {resources: res.resources});
 }
 
-/* feedback & transfer */
-function openFeedbackBlock(){
-  const fb = document.getElementById('feedbackInsert');
-  fb.style.display = 'block';
-  document.getElementById('resources-panel').scrollTop = 0;
-}
-function closeFeedbackBlock(){
-  const fb = document.getElementById('feedbackInsert');
-  fb.style.display = 'none';
-  document.getElementById('feedbackNewResource').value = '';
-  document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.remove('sel'));
-}
-function transferToHuman(){
-  appendMessage('agent', "Transfert demandé : un humain va être contacté (simulation). Merci d'indiquer vos coordonnées dans une vraie implémentation.");
-}
+/* ---------- feedback & transfer ---------- */
+function openFeedbackBlock(){ document.getElementById('feedbackInsert').style.display='block'; document.getElementById('resources-panel').scrollTop = 0; }
+function closeFeedbackBlock(){ document.getElementById('feedbackInsert').style.display='none'; document.getElementById('feedbackNewResource').value=''; document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.remove('sel')); }
+function transferToHuman(){ appendMessage('agent', "Transfert demandé : un humain va être contacté (simulation). Merci d'indiquer vos coordonnées dans une vraie implémentation."); }
 
 /* ---------- events & UI wiring ---------- */
-
-/* tag clouds */
-setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
-  state.ui.selectedType = v;
-  document.getElementById('inputNote').style.display = v==='note'?'block':'none';
-  document.getElementById('inputUrl').style.display = v==='url'?'block':'none';
-  document.getElementById('inputPdf').style.display = v==='pdf'?'block':'none';
-});
+setupTagCloud('typeTags', state.ui.selectedType, (v)=> { state.ui.selectedType = v; document.getElementById('inputNote').style.display = v==='note'?'block':'none'; document.getElementById('inputUrl').style.display = v==='url'?'block':'none'; document.getElementById('inputPdf').style.display = v==='pdf'?'block':'none'; });
 setupTagCloud('categoryTags', state.ui.selectedCategory, (v)=> state.ui.selectedCategory = v);
 setupTagCloud('topicCloud', state.ui.selectedTopic || '', (v)=> state.ui.selectedTopic = v);
-
-/* settings tag clouds */
 setupTagCloud('styleTags', state.settings.style, (v)=> state.settings.style=v);
 setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type=v);
 
-/* share/settings open/close */
-document.getElementById('shareBtn').addEventListener('click', ()=>{
-  const p = document.getElementById('sharePanel');
-  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+/* share/settings/subscription open/close */
+document.getElementById('shareBtn').addEventListener('click', ()=> {
+  const p = document.getElementById('sharePanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block';
 });
-document.getElementById('closeShare').addEventListener('click', ()=>{
-  document.getElementById('sharePanel').style.display = 'none';
-});
-document.getElementById('settingsBtn').addEventListener('click', ()=>{
-  const s = document.getElementById('settingsPanel');
-  s.style.display = s.style.display === 'block' ? 'none' : 'block';
-  // populate fields
+document.getElementById('closeShare').addEventListener('click', ()=> document.getElementById('sharePanel').style.display = 'none');
+
+document.getElementById('settingsBtn').addEventListener('click', ()=> {
+  const s = document.getElementById('settingsPanel'); s.style.display = s.style.display === 'block' ? 'none' : 'block';
   document.getElementById('agentName').value = state.settings.name;
 });
-document.getElementById('closeSettings').addEventListener('click', ()=>{
-  // save settings
-  state.settings.name = document.getElementById('agentName').value || state.settings.name;
-  document.getElementById('settingsPanel').style.display = 'none';
+document.getElementById('closeSettings').addEventListener('click', ()=> { state.settings.name = document.getElementById('agentName').value || state.settings.name; document.getElementById('settingsPanel').style.display = 'none'; });
+
+document.getElementById('subscriptionBtn').addEventListener('click', ()=> {
+  const s = document.getElementById('subscriptionPanel'); s.style.display = s.style.display === 'block' ? 'none' : 'block';
 });
+document.getElementById('closeSubscription').addEventListener('click', ()=> document.getElementById('subscriptionPanel').style.display = 'none');
+document.getElementById('upgradeBtn').addEventListener('click', ()=> alert('Mock: redirection vers la page de mise à niveau (non implémentée).'));
 
 /* share copy */
-document.getElementById('copyShare').addEventListener('click', ()=>{
-  const link = document.getElementById('shareLink');
-  link.select(); link.setSelectionRange(0,99999);
-  document.execCommand('copy');
-  alert('Lien copié.');
-});
+document.getElementById('copyShare').addEventListener('click', ()=> { const link = document.getElementById('shareLink'); link.select(); link.setSelectionRange(0,99999); document.execCommand('copy'); alert('Lien copié.'); });
 
 /* Add resource */
-document.getElementById('addResBtn').addEventListener('click', async ()=>{
+document.getElementById('addResBtn').addEventListener('click', async ()=> {
   const type = state.ui.selectedType;
   const category = state.ui.selectedCategory;
   const title = document.getElementById('resTitle').value || '';
@@ -610,27 +558,13 @@ document.getElementById('addResBtn').addEventListener('click', async ()=>{
     const content = document.getElementById('resContent').value || '';
     if(!content.trim()){ alert('Veuillez ajouter du texte.'); return; }
     addResource({type:'note', title, category, rawText:content, meta:{}});
-    document.getElementById('resContent').value = '';
-    document.getElementById('resTitle').value = '';
+    document.getElementById('resContent').value = ''; document.getElementById('resTitle').value = '';
   } else if(type==='url'){
     const url = document.getElementById('resUrl').value.trim();
     if(!url){ alert('URL manquante'); return; }
     const stubTitle = title || url;
     const placeholder = addResource({type:'url', title:stubTitle, category, rawText:`(récupération en cours: ${url})`, meta:{url}});
-    try{
-      const text = await fetchUrlText(url);
-      placeholder.rawText = text;
-      placeholder.sentences = sentenceSplit(text).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-      // index tokens
-      placeholder.sentences.forEach(s=>s.tokens.forEach(t=>{
-        if(!state.inverted[t]) state.inverted[t]=new Set();
-        state.inverted[t].add(placeholder.id);
-      }));
-      renderResources();
-    }catch(err){
-      placeholder.rawText = `Erreur lors de la récupération: ${err.message||err}`;
-      renderResources();
-    }
+    try{ const text = await fetchUrlText(url); placeholder.rawText = text; placeholder.sentences = sentenceSplit(text).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))})); placeholder.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(placeholder.id); })); renderResources(); }catch(err){ placeholder.rawText = `Erreur lors de la récupération: ${err.message||err}`; renderResources(); }
     document.getElementById('resUrl').value = '';
   } else if(type==='pdf'){
     const fileInput = document.getElementById('resPdfFile');
@@ -638,19 +572,7 @@ document.getElementById('addResBtn').addEventListener('click', async ()=>{
     const file = fileInput.files[0];
     const titleLocal = title || file.name;
     const stub = addResource({type:'pdf', title:titleLocal, category, rawText:`(lecture PDF en cours: ${file.name})`, meta:{fileName:file.name}});
-    try{
-      const text = await readPdfFile(file);
-      stub.rawText = text || '(PDF sans texte détectable)';
-      stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-      stub.sentences.forEach(s=>s.tokens.forEach(t=>{
-        if(!state.inverted[t]) state.inverted[t]=new Set();
-        state.inverted[t].add(stub.id);
-      }));
-      renderResources();
-    }catch(err){
-      stub.rawText = `ERREUR lecture PDF : ${err.message||err}`;
-      renderResources();
-    }
+    try{ const text = await readPdfFile(file); stub.rawText = text || '(PDF sans texte détectable)'; stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))})); stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); })); renderResources(); }catch(err){ stub.rawText = `ERREUR lecture PDF : ${err.message||err}`; renderResources(); }
     fileInput.value = '';
   }
 });
@@ -661,70 +583,23 @@ document.getElementById('resourceList').addEventListener('click', (e)=>{
   if(!btn) return;
   const id = btn.dataset.id;
   const action = btn.dataset.action;
-  if(action==='delete') {
-    if(confirm('Supprimer cette ressource ?')) deleteResource(id);
-  } else if(action==='view'){
-    const r = state.resources.find(x=>x.id===id);
-    if(!r) return;
-    openModalForResource(id);
-  } else if(action==='export'){
-    const r = state.resources.find(x=>x.id===id);
-    if(!r) return;
-    const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = (r.title||r.id)+'.txt';
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }
+  if(action==='delete') { if(confirm('Supprimer cette ressource ?')) deleteResource(id); }
+  else if(action==='view'){ openModalForResource(id); }
+  else if(action==='export'){ const r = state.resources.find(x=>x.id===id); if(!r) return; const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = (r.title||r.id)+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 });
 
 /* clear form */
-document.getElementById('clearResBtn').addEventListener('click', ()=>{
-  document.getElementById('resTitle').value = '';
-  document.getElementById('resContent').value = '';
-  document.getElementById('resUrl').value = '';
-  document.getElementById('resPdfFile').value = '';
-});
+document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value = ''; document.getElementById('resContent').value = ''; document.getElementById('resUrl').value = ''; document.getElementById('resPdfFile').value = ''; });
 
 /* send and enter */
 document.getElementById('sendBtn').addEventListener('click', handleSend);
-document.getElementById('queryInput').addEventListener('keydown', (e)=>{
-  if(e.key==='Enter' && !e.shiftKey){
-    e.preventDefault(); handleSend();
-  }
-});
-document.getElementById('clearChat').addEventListener('click', ()=>{
-  if(confirm('Réinitialiser la discussion ?')) {
-    document.getElementById('messages').innerHTML = '';
-    state.messages = [];
-  }
-});
+document.getElementById('queryInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); }});
+document.getElementById('clearChat').addEventListener('click', ()=>{ if(confirm('Réinitialiser la discussion ?')) { document.getElementById('messages').innerHTML = ''; state.messages = []; }});
 
 /* feedback block handlers */
-document.querySelectorAll('#ratingRow .rating-star').forEach(el=>{
-  el.addEventListener('click', (ev)=>{
-    const v = parseInt(el.dataset.v,10);
-    document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.toggle('sel', parseInt(s.dataset.v,10) <= v));
-    el.dataset.selected = v;
-  });
-});
-document.getElementById('saveFeedbackRes').addEventListener('click', ()=>{
-  const ratingEl = Array.from(document.querySelectorAll('#ratingRow .rating-star')).find(s=>s.classList.contains('sel'));
-  const rating = ratingEl ? parseInt(ratingEl.dataset.v,10) : null;
-  const content = document.getElementById('feedbackNewResource').value.trim();
-  if(!rating && !content){
-    if(!confirm('Vous n\'avez pas donné de note ni ajouté de ressource. Continuer ?')) return;
-  }
-  if(content){
-    addResource({type:'note', title:'Feedback resource', category:'Other', rawText:content, meta:{via:'feedback'}});
-  }
-  closeFeedbackBlock();
-  alert('Merci pour votre feedback !');
-});
+document.querySelectorAll('#ratingRow .rating-star').forEach(el=>{ el.addEventListener('click', (ev)=>{ const v = parseInt(el.dataset.v,10); document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.toggle('sel', parseInt(s.dataset.v,10) <= v)); el.dataset.selected = v; }); });
+document.getElementById('saveFeedbackRes').addEventListener('click', ()=>{ const ratingEl = Array.from(document.querySelectorAll('#ratingRow .rating-star')).find(s=>s.classList.contains('sel')); const rating = ratingEl ? parseInt(ratingEl.dataset.v,10) : null; const content = document.getElementById('feedbackNewResource').value.trim(); if(!rating && !content){ if(!confirm('Vous n\\'avez pas donné de note ni ajouté de ressource. Continuer ?')) return; } if(content){ addResource({type:'note', title:'Feedback resource', category:'Other', rawText:content, meta:{via:'feedback'}}); } closeFeedbackBlock(); alert('Merci pour votre feedback !'); });
 document.getElementById('cancelFeedback').addEventListener('click', ()=>closeFeedbackBlock());
-
-/* messages click for feedback/transfer already handled in appendMessage by wire-up on elements */
 
 /* modal handling */
 function openModalForResource(id){
@@ -736,16 +611,8 @@ function openModalForResource(id){
   mb.style.display = 'flex';
   mb.setAttribute('aria-hidden','false');
 }
-document.getElementById('closeModal').addEventListener('click', ()=>{
-  const mb = document.getElementById('modalBackdrop');
-  mb.style.display = 'none';
-  mb.setAttribute('aria-hidden','true');
-});
-document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
-  if(e.target === document.getElementById('modalBackdrop')){
-    document.getElementById('modalBackdrop').style.display = 'none';
-  }
-});
+document.getElementById('closeModal').addEventListener('click', ()=>{ const mb = document.getElementById('modalBackdrop'); mb.style.display = 'none'; mb.setAttribute('aria-hidden','true'); });
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display = 'none'; });
 
 /* initial sample resources */
 addResource({type:'note', title:'Guide sécurité', category:'Help', rawText:
@@ -753,7 +620,27 @@ addResource({type:'note', title:'Guide sécurité', category:'Help', rawText:
 addResource({type:'note', title:'Procédure backup', category:'Process', rawText:
 `La procédure de backup se fait quotidiennement à 02:00. Les étapes : stop services, dump base, compresser, chiffrer, envoyer sur l'archive.` , meta:{}});
 
-/* expose debug */
+/* ---------- Hide / Show left column & Modifier button ---------- */
+const leftCol = document.getElementById('leftCol');
+const rightCol = document.getElementById('rightCol');
+const modifyBtn = document.getElementById('modifyBtn');
+document.getElementById('hideLeft').addEventListener('click', ()=> {
+  // hide left
+  state.ui.leftVisible = false;
+  leftCol.classList.add('hidden');
+  rightCol.classList.add('full');
+  // show modify button
+  modifyBtn.style.display = 'inline-block';
+});
+modifyBtn.addEventListener('click', ()=> {
+  // show left
+  state.ui.leftVisible = true;
+  leftCol.classList.remove('hidden');
+  rightCol.classList.remove('full');
+  modifyBtn.style.display = 'none';
+});
+
+/* expose for debug */
 window.miniIA = { state, addResource, retrieveAnswer, renderResources };
 
 </script>
