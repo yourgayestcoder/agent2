@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mini Chat IA local — Ressources user-driven</title>
+<title>Mini Chat IA local — Ressources user-driven (v2)</title>
 
 <!-- PDF.js (pour lecture de PDF côté client) -->
 <script src="https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.min.js"></script>
@@ -37,7 +37,7 @@
   .panel h3{margin:0 0 8px 0;font-size:15px;}
   .add-resource-form{display:flex;flex-direction:column;gap:8px;}
   .row{display:flex;gap:8px;align-items:center;}
-  input[type="text"], textarea, select {padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;width:100%;box-sizing:border-box;}
+  input[type="text"], textarea {padding:8px;border:1px solid #e5e7eb;border-radius:6px;font-size:14px;width:100%;box-sizing:border-box;}
   textarea{min-height:80px;resize:vertical;}
   .btn{padding:8px 10px;border-radius:6px;border:0;background:var(--accent);color:white;cursor:pointer;font-weight:600;}
   .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(43,110,246,0.15);}
@@ -49,18 +49,26 @@
   .small{font-size:13px;color:var(--muted)}
   .feedback-block{display:none;padding:8px;border-radius:8px;background:#fff9f6;border:1px solid #ffe6d5}
 
+  /* Tag clouds (no dropdowns) */
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:8px}
+  .tag-item{padding:6px 10px;border-radius:999px;border:1px solid #e6e9ef;background:#fff;cursor:pointer;font-weight:600;font-size:13px}
+  .tag-item.sel{background:var(--accent);color:white;border-color:var(--accent)}
+  .tag-item.ghost{background:transparent;color:var(--muted);border-style:dashed}
+
   /* Right column (chat) */
   .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
   .share-panel{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
-  .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:auto}
-  .messages{display:flex;flex-direction:column;gap:12px}
+  .settings-panel{display:none;padding:8px;border-radius:6px;border:1px solid #e6e9ef;background:#fff}
+  .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:auto;position:relative}
+  .messages{display:flex;flex-direction:column;gap:12px;padding-bottom:90px} /* padding-bottom so messages not hidden under sticky controls */
   .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
   .message.user{align-self:flex-end;background:#e6f0ff;color:#03326a}
   .message.agent{align-self:flex-start;background:#f3f4f6;color:#111}
   .message .meta-small{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px}
-  .topic-select{width:220px}
+  .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;
+            position:sticky; bottom:12px; box-shadow:0 -3px 12px rgba(10,10,10,0.03); z-index:20;}
+  .topic-cloud{display:flex;gap:8px;flex-wrap:wrap}
   .share-link{display:flex;gap:8px;align-items:center}
   .suggestions{font-size:13px;color:var(--muted)}
   .action-buttons{display:flex;gap:8px;margin-top:6px}
@@ -69,10 +77,18 @@
   .rating-star{cursor:pointer;padding:6px;border-radius:4px;border:1px solid #eee}
   .rating-star.sel{background:#ffedd5;border-color:#ffb86b}
   .transfer-btn{background:#ff4757;color:white}
+
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:60}
+  .modal{background:white;border-radius:8px;padding:16px;max-width:90%;max-height:80%;overflow:auto;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
+  .modal h4{margin:0 0 8px 0}
+  .modal pre{white-space:pre-wrap;word-break:break-word;background:#fafafa;padding:12px;border-radius:6px;border:1px solid #eee;font-size:13px}
+
   /* responsive */
   @media (max-width:900px){
     .app{flex-direction:column}
     .col-left,.col-right{width:100%}
+    .messages{padding-bottom:120px}
   }
 </style>
 </head>
@@ -84,22 +100,22 @@
     <div class="panel" id="resources-panel">
       <h3>Ressources (ajouter / gérer)</h3>
 
-      <form id="addForm" class="add-resource-form">
+      <form id="addForm" class="add-resource-form" onsubmit="return false;">
         <label class="small">Type</label>
-        <select id="resType">
-          <option value="note">Note (texte)</option>
-          <option value="url">Lien (URL)</option>
-          <option value="pdf">Document PDF (upload)</option>
-        </select>
+        <div id="typeTags" class="tag-cloud" role="radiogroup" aria-label="Type de ressource">
+          <div class="tag-item sel" data-value="note">Note</div>
+          <div class="tag-item" data-value="url">Lien (URL)</div>
+          <div class="tag-item" data-value="pdf">Document PDF</div>
+        </div>
 
         <label class="small">Catégorie</label>
-        <select id="resCategory">
-          <option>Help</option>
-          <option>Knowledge</option>
-          <option>Process</option>
-          <option>How to</option>
-          <option>Other</option>
-        </select>
+        <div id="categoryTags" class="tag-cloud" role="radiogroup" aria-label="Catégorie">
+          <div class="tag-item sel" data-value="Help">Help</div>
+          <div class="tag-item" data-value="Knowledge">Knowledge</div>
+          <div class="tag-item" data-value="Process">Process</div>
+          <div class="tag-item" data-value="How to">How to</div>
+          <div class="tag-item" data-value="Other">Other</div>
+        </div>
 
         <div id="inputNote">
           <label class="small">Titre</label>
@@ -161,36 +177,65 @@
 
       <div style="display:flex;gap:8px;align-items:center">
         <button id="shareBtn" class="btn ghost">Partager</button>
+        <button id="settingsBtn" class="btn ghost">Réglages</button>
       </div>
     </div>
 
-    <div class="share-panel panel" id="sharePanel">
+    <div class="share-panel panel" id="sharePanel" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div><strong>Lien de partage (temporaire)</strong></div>
         <div><button id="closeShare" class="btn ghost">Fermer</button></div>
       </div>
       <p class="small" style="margin-top:8px">Copiez ce lien pour partager : </p>
       <div style="display:flex;gap:8px;align-items:center">
-        <input id="shareLink" readonly type="text" value="https://example.local/agent/1234" />
+        <input id="shareLink" readonly type="text" value="https://example.local/agent/1234" style="flex:1"/>
         <button id="copyShare" class="btn">Copier</button>
       </div>
     </div>
 
-    <div class="panel chat-panel">
+    <div class="settings-panel panel" id="settingsPanel" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Réglages de l'agent</strong></div>
+        <div><button id="closeSettings" class="btn ghost">Fermer</button></div>
+      </div>
+      <div style="margin-top:8px">
+        <label class="small">Nom de l'agent</label>
+        <input id="agentName" placeholder="Nom de l'agent" type="text"/>
+
+        <label class="small" style="margin-top:8px">Style</label>
+        <div id="styleTags" class="tag-cloud" role="radiogroup" aria-label="Style agent">
+          <div class="tag-item sel" data-value="Bronze">Bronze</div>
+          <div class="tag-item" data-value="Ice">Ice</div>
+          <div class="tag-item" data-value="Plant">Plant</div>
+        </div>
+
+        <label class="small" style="margin-top:8px">Type</label>
+        <div id="typeAgentTags" class="tag-cloud" role="radiogroup" aria-label="Type agent">
+          <div class="tag-item sel" data-value="Interne">Agent Interne</div>
+          <div class="tag-item" data-value="Public">Agent Public</div>
+        </div>
+        <div style="margin-top:8px" class="small">Ces paramètres sont locaux pour l'instant (usage futur avec Supabase).</div>
+      </div>
+    </div>
+
+    <div class="panel chat-panel" id="chatPanel">
       <div class="messages" id="messages">
         <!-- messages -->
       </div>
 
       <div class="controls" role="region" aria-label="Saisie de message">
         <input id="queryInput" type="text" placeholder="Posez votre question..." style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e9ef"/>
-        <select id="topicSelect" class="topic-select">
-          <option value="">-- Topic (optionnel) --</option>
-          <option>Help</option>
-          <option>Knowledge</option>
-          <option>Process</option>
-          <option>How to</option>
-          <option>Other</option>
-        </select>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:260px">
+          <div class="small">Topic (optionnel)</div>
+          <div id="topicCloud" class="topic-cloud">
+            <div class="tag-item" data-value="">Aucun</div>
+            <div class="tag-item" data-value="Help">Help</div>
+            <div class="tag-item" data-value="Knowledge">Knowledge</div>
+            <div class="tag-item" data-value="Process">Process</div>
+            <div class="tag-item" data-value="How to">How to</div>
+            <div class="tag-item" data-value="Other">Other</div>
+          </div>
+        </div>
         <button id="sendBtn" class="btn">Envoyer</button>
       </div>
 
@@ -201,59 +246,58 @@
   </div>
 </div>
 
+<!-- Modal to display full resource -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-hidden="true">
+  <div class="modal" id="modalContent">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h4 id="modalTitle">Source</h4>
+      <button id="closeModal" class="btn ghost">Fermer</button>
+    </div>
+    <pre id="modalBody"></pre>
+  </div>
+</div>
+
 <script>
-/*
-  Mini chat IA local:
-  - Stocke ressources (notes, URL, PDF text) en mémoire (session).
-  - Indexe à la volée en phrases.
-  - Recherche par similarité TF simple (bag-of-words + cosine-ish).
-  - Assemble réponse à partir des phrases les plus pertinentes (maxTokens).
-  - Si score trop bas => renvoie message "Je n'ai pas la réponse..." + boutons.
-
-  Limitations :
-  - Recherche basique (pas d'embeddings réels).
-  - URL fetching dépend du CORS du site.
-  - PDF parsing via PDF.js (peut être lent selon taille).
-*/
-
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.worker.min.js';
 
-/* ---------- stockage en mémoire ---------- */
+/* ---------- state ---------- */
 const state = {
-  resources: [], // {id, type, title, category, rawText, meta:{url,fileName}, sentences: [{text, tokens, tf}]}
-  inverted: {}, // for optional use
-  messages: [], // chat messages [{role:'user'|'agent',text,ts}]
-  resourceCounter: 0
+  resources: [], // {id, type, title, category, rawText, meta:{url,fileName}, sentences: [...]}
+  inverted: {},
+  messages: [],
+  resourceCounter: 0,
+  settings: {
+    name: 'Agent local',
+    style: 'Bronze',
+    type: 'Interne'
+  },
+  ui: {
+    selectedType: 'note',
+    selectedCategory: 'Help',
+    selectedTopic: '',
+  }
 };
 
 /* ---------- utilitaires texte/simple tokenizer ---------- */
 function normalizeText(s){
-  return s.trim().replace(/\s+/g,' ').toLowerCase();
+  return (s||'').trim().replace(/\s+/g,' ').toLowerCase();
 }
 function tokenize(s){
-  // simple split on non-word, remove tiny tokens
   return normalizeText(s).split(/[^a-z0-9àâäéèêëîïôöùûüç'-]+/).filter(t=>t && t.length>1);
 }
 function sentenceSplit(text){
-  // naive split by punctuation.
-  const raw = text.replace(/\r/g,' ').replace(/\n/g,' ').replace(/\s+/g,' ');
+  const raw = (text||'').replace(/\r/g,' ').replace(/\n/g,' ').replace(/\s+/g,' ');
   const parts = raw.split(/(?<=[.?!])\s+/g);
-  return parts.map(p=>p.trim()).filter(p=>p.length>10); // ignore very short
+  return parts.map(p=>p.trim()).filter(p=>p.length>10);
 }
-
-/* build TF map for tokens */
 function buildTf(tokens){
   const tf = {};
   tokens.forEach(t=>tf[t]=(tf[t]||0)+1);
-  // optionally normalize by length
   const L = tokens.length || 1;
   Object.keys(tf).forEach(k=>tf[k]=tf[k]/L);
   return tf;
 }
-
-/* cosine-like score between two tf maps */
 function scoreTf(tfQ, tfDoc){
-  // compute dot product of matching tokens
   let dot = 0;
   let normQ = 0, normD = 0;
   for(const k in tfQ){ normQ += tfQ[k]*tfQ[k]; }
@@ -265,7 +309,29 @@ function scoreTf(tfQ, tfDoc){
   return dot / (Math.sqrt(normQ)*Math.sqrt(normD));
 }
 
+/* ---------- DOM helpers for tag clouds ---------- */
+function setupTagCloud(containerId, initialValue, onChange){
+  const cont = document.getElementById(containerId);
+  if(!cont) return;
+  cont.querySelectorAll('.tag-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      // deselect siblings
+      cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
+      el.classList.add('sel');
+      const val = el.dataset.value;
+      onChange && onChange(val);
+    });
+  });
+  // set initial
+  const selected = cont.querySelector(`.tag-item[data-value="${initialValue}"]`);
+  if(selected) {
+    cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
+    selected.classList.add('sel');
+  }
+}
+
 /* ---------- resource management ---------- */
+function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
 function renderResources(){
   const cont = document.getElementById('resourceList');
@@ -275,16 +341,16 @@ function renderResources(){
     div.className = 'resource-item';
     div.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;flex:1">
           <strong>${escapeHtml(r.title || (r.type==='url'?r.meta.url:r.type.toUpperCase()))}</strong>
           <div class="meta">
             <span class="tag">${r.category}</span>
             <span>${r.type.toUpperCase()}</span>
             <span>${r.meta && r.meta.fileName?escapeHtml(r.meta.fileName):''}</span>
-            <div class="resource-controls">
-              <button class="btn ghost" data-id="${r.id}" data-action="delete">Supprimer</button>
-            </div>
           </div>
+        </div>
+        <div class="resource-controls">
+          <button class="btn ghost" data-id="${r.id}" data-action="delete">Supprimer</button>
         </div>
       </div>
       <div class="small">${escapeHtml(r.rawText.substring(0,300))}${r.rawText.length>300?'...':''}</div>
@@ -297,22 +363,23 @@ function renderResources(){
   });
 }
 
-/* escape helper */
-function escapeHtml(s){
-  if(!s) return '';
-  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-}
-
+/* index resource */
 function addResource({type, title, category, rawText, meta}){
   const id = 'r'+(++state.resourceCounter);
   const sentences = sentenceSplit(rawText || '').map(s=>{
     const tokens = tokenize(s);
     return {text:s, tokens, tf: buildTf(tokens)};
   }).filter(x=>x.tokens.length>0);
-  const resource = {id,type,title,category,rawText,meta,sentences};
+  const resource = {id,type,title: title || (type==='url'?meta.url:type),category,rawText,meta,sentences};
   state.resources.push(resource);
   renderResources();
-  indexInverted(resource);
+  // build inverted (simple)
+  resource.sentences.forEach(s=>{
+    s.tokens.forEach(t=>{
+      if(!state.inverted[t]) state.inverted[t]=new Set();
+      state.inverted[t].add(resource.id);
+    });
+  });
   return resource;
 }
 
@@ -321,27 +388,16 @@ function deleteResource(id){
   renderResources();
 }
 
-/* Optional inverted index - simple token to resource ids */
-function indexInverted(resource){
-  resource.sentences.forEach(s=>{
-    s.tokens.forEach(t=>{
-      if(!state.inverted[t]) state.inverted[t]=new Set();
-      state.inverted[t].add(resource.id);
-    });
-  });
-}
-
-/* Try fetch URL and extract basic text (CORS permitting) */
+/* fetch URL */
 async function fetchUrlText(url){
   try{
     const resp = await fetch(url, {mode:'cors'});
     const ct = resp.headers.get('content-type') || '';
     if(ct.includes('text/html')){
       const html = await resp.text();
-      // naive text extraction: strip tags
       const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
       const text = cleaned.replace(/<\/?[^>]+(>|$)/g, ' ').replace(/\s+/g,' ');
-      return text.substring(0,20000); // limit
+      return text.substring(0,20000);
     } else {
       return `Contenu non-HTML récupéré depuis ${url} (type: ${ct}).`;
     }
@@ -350,7 +406,7 @@ async function fetchUrlText(url){
   }
 }
 
-/* Read PDF file using PDF.js */
+/* read pdf */
 async function readPdfFile(file){
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
@@ -369,24 +425,43 @@ async function readPdfFile(file){
 }
 
 /* ---------- chat & retrieval ---------- */
-
 function appendMessage(role, text, meta = {}) {
   const messagesDiv = document.getElementById('messages');
   const el = document.createElement('div');
   el.className = 'message ' + (role==='user'?'user':'agent');
   const timeS = new Date().toLocaleTimeString();
-  el.innerHTML = `<div class="meta-small">${role==='user'?'Vous':'Agent IA'} · ${timeS}</div><div>${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
+  // prevent HTML injection from content, but allow meta interactive parts appended below
+  el.innerHTML = `<div class="meta-small">${role==='user'?'Vous':'Agent IA'} · ${timeS}</div><div class="msg-body">${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
 
-  // if agent: add feedback small link & transfer buttons if needed.
+  // if agent: add feedback small link & transfer buttons and clickable sources if provided in meta
   if(role==='agent'){
     const actions = document.createElement('div');
     actions.style.marginTop = '8px';
     actions.innerHTML = `<button class="link-small" data-action="feedback">Give feedback and improve accuracy</button>
                          <button class="link-small" data-action="transfer" style="margin-left:8px">Transfer to a human</button>`;
     el.appendChild(actions);
-    // attach events
     actions.querySelector('[data-action="feedback"]').addEventListener('click',()=>openFeedbackBlock());
     actions.querySelector('[data-action="transfer"]').addEventListener('click',()=>transferToHuman());
+
+    // append sources if meta.snippets or meta.resources
+    const uniq = meta.resources ? Array.from(new Set(meta.resources)) : [];
+    if(uniq.length){
+      const sr = document.createElement('div');
+      sr.style.marginTop='8px';
+      sr.innerHTML = '<div class="small">Sources citées :</div>';
+      const list = document.createElement('div');
+      list.style.display='flex'; list.style.gap='8px'; list.style.flexWrap='wrap'; list.style.marginTop='6px';
+      uniq.forEach(rid=>{
+        const r = state.resources.find(x=>x.id===rid);
+        const btn = document.createElement('button');
+        btn.className='tag-item';
+        btn.textContent = r ? (r.title || r.type) : rid;
+        btn.addEventListener('click', ()=> openModalForResource(rid));
+        list.appendChild(btn);
+      });
+      sr.appendChild(list);
+      el.appendChild(sr);
+    }
   }
 
   messagesDiv.appendChild(el);
@@ -394,13 +469,12 @@ function appendMessage(role, text, meta = {}) {
   state.messages.push({role,text,meta,ts:Date.now()});
 }
 
-/* retrieval: given question, return assembled answer from resources */
+/* retrieval: similar to previous version but returns resource ids for cited sources */
 function retrieveAnswer(question, chosenTopic){
   const qnorm = normalizeText(question || '');
   const qtokens = tokenize(qnorm);
   const qtf = buildTf(qtokens);
 
-  // Candidate sentences: gather from all resources (topic is only advisory)
   const candidates = [];
   state.resources.forEach(res=>{
     res.sentences.forEach(s=>{
@@ -409,24 +483,18 @@ function retrieveAnswer(question, chosenTopic){
     });
   });
 
-  // sort by score desc
   candidates.sort((a,b)=>b.score - a.score);
-
-  // combine top N sentences with non-duplicated resource context
-  const top = candidates.slice(0,14).filter(c=>c.score>0);
+  const top = candidates.slice(0,18).filter(c=>c.score>0);
   const bestScore = top.length?top[0].score:0;
-
-  // compute a simple threshold (empirical)
-  const threshold = 0.06; // small, tuneable
+  const threshold = 0.06;
   if(bestScore < threshold){
-    return {found:false, bestScore, snippets: []};
+    return {found:false, bestScore, snippets: [], resources: []};
   }
 
-  // group and pick best per resource, but keep top overall
   const used = new Set();
   const snippets = [];
   for(const c of top){
-    if(snippets.length>=6) break;
+    if(snippets.length>=8) break;
     const key = c.resource.id + '||' + c.text.slice(0,30);
     if(!used.has(key)){
       snippets.push({text:c.text, score:c.score, resource:c.resource});
@@ -434,7 +502,10 @@ function retrieveAnswer(question, chosenTopic){
     }
   }
 
-  // build an answer: start with an intro referencing topic choice (advisory)
+  // pick unique resource ids used
+  const resourceIds = [...new Set(snippets.map(s=>s.resource.id))];
+
+  // create textual answer
   let answer = '';
   if(chosenTopic){
     answer += `Contexte (topic demandé: ${chosenTopic}). Réponse basée sur les ressources fournies :\n\n`;
@@ -442,85 +513,119 @@ function retrieveAnswer(question, chosenTopic){
     answer += `Réponse basée uniquement sur les ressources disponibles :\n\n`;
   }
   snippets.forEach((s, i)=>{
-    answer += `- (${s.resource.title || s.resource.type}) ${s.text}\n`;
+    answer += `- ${s.text}\n`;
   });
+  answer += `\nSources citées : ${resourceIds.map(id=> {
+    const r = state.resources.find(x=>x.id===id);
+    return r ? (r.title || r.type) : id;
+  }).join('; ')}.`;
 
-  // add citation-like cues
-  answer += `\nSources citées : ${[...new Set(snippets.map(s=>s.resource.title || s.resource.type))].join('; ')}.`;
-  return {found:true, bestScore, snippets, answer};
+  return {found:true, bestScore, snippets, answer, resources: resourceIds};
 }
 
 /* sendHandler */
 async function handleSend(){
-  const q = document.getElementById('queryInput').value.trim();
-  const topic = document.getElementById('topicSelect').value;
+  const qEl = document.getElementById('queryInput');
+  const q = qEl.value.trim();
+  const topic = state.ui.selectedTopic;
   if(!q) return;
   appendMessage('user', q);
-  document.getElementById('queryInput').value = '';
+  qEl.value = '';
 
-  // simulate processing (synchronous)
   const res = retrieveAnswer(q, topic);
   if(!res.found){
     const noResp = "Il semble que je n’ai pas la réponse à cette information.";
     appendMessage('agent', noResp);
-    // below: add action buttons (already added by appendMessage)
     return;
   }
-  appendMessage('agent', res.answer);
+  appendMessage('agent', res.answer, {resources: res.resources});
 }
 
 /* feedback & transfer */
 function openFeedbackBlock(){
   const fb = document.getElementById('feedbackInsert');
   fb.style.display = 'block';
-  // scroll left column to top
   document.getElementById('resources-panel').scrollTop = 0;
 }
 function closeFeedbackBlock(){
   const fb = document.getElementById('feedbackInsert');
   fb.style.display = 'none';
-  // clear fields
   document.getElementById('feedbackNewResource').value = '';
-  const stars = document.querySelectorAll('#ratingRow .rating-star');
-  stars.forEach(s=>s.classList.remove('sel'));
+  document.querySelectorAll('#ratingRow .rating-star').forEach(s=>s.classList.remove('sel'));
 }
 function transferToHuman(){
-  // simple behaviour: append a message with "transfert"
   appendMessage('agent', "Transfert demandé : un humain va être contacté (simulation). Merci d'indiquer vos coordonnées dans une vraie implémentation.");
 }
 
-/* ---------- events ---------- */
+/* ---------- events & UI wiring ---------- */
 
-document.getElementById('resType').addEventListener('change', (e)=>{
-  const v = e.target.value;
+/* tag clouds */
+setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
+  state.ui.selectedType = v;
   document.getElementById('inputNote').style.display = v==='note'?'block':'none';
   document.getElementById('inputUrl').style.display = v==='url'?'block':'none';
   document.getElementById('inputPdf').style.display = v==='pdf'?'block':'none';
 });
+setupTagCloud('categoryTags', state.ui.selectedCategory, (v)=> state.ui.selectedCategory = v);
+setupTagCloud('topicCloud', state.ui.selectedTopic || '', (v)=> state.ui.selectedTopic = v);
 
+/* settings tag clouds */
+setupTagCloud('styleTags', state.settings.style, (v)=> state.settings.style=v);
+setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type=v);
+
+/* share/settings open/close */
+document.getElementById('shareBtn').addEventListener('click', ()=>{
+  const p = document.getElementById('sharePanel');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+document.getElementById('closeShare').addEventListener('click', ()=>{
+  document.getElementById('sharePanel').style.display = 'none';
+});
+document.getElementById('settingsBtn').addEventListener('click', ()=>{
+  const s = document.getElementById('settingsPanel');
+  s.style.display = s.style.display === 'block' ? 'none' : 'block';
+  // populate fields
+  document.getElementById('agentName').value = state.settings.name;
+});
+document.getElementById('closeSettings').addEventListener('click', ()=>{
+  // save settings
+  state.settings.name = document.getElementById('agentName').value || state.settings.name;
+  document.getElementById('settingsPanel').style.display = 'none';
+});
+
+/* share copy */
+document.getElementById('copyShare').addEventListener('click', ()=>{
+  const link = document.getElementById('shareLink');
+  link.select(); link.setSelectionRange(0,99999);
+  document.execCommand('copy');
+  alert('Lien copié.');
+});
+
+/* Add resource */
 document.getElementById('addResBtn').addEventListener('click', async ()=>{
-  const type = document.getElementById('resType').value;
-  const category = document.getElementById('resCategory').value;
+  const type = state.ui.selectedType;
+  const category = state.ui.selectedCategory;
   const title = document.getElementById('resTitle').value || '';
   if(type==='note'){
     const content = document.getElementById('resContent').value || '';
     if(!content.trim()){ alert('Veuillez ajouter du texte.'); return; }
     addResource({type:'note', title, category, rawText:content, meta:{}});
-    // clear
     document.getElementById('resContent').value = '';
     document.getElementById('resTitle').value = '';
   } else if(type==='url'){
     const url = document.getElementById('resUrl').value.trim();
     if(!url){ alert('URL manquante'); return; }
     const stubTitle = title || url;
-    // attempt fetch
     const placeholder = addResource({type:'url', title:stubTitle, category, rawText:`(récupération en cours: ${url})`, meta:{url}});
     try{
       const text = await fetchUrlText(url);
-      // update resource
       placeholder.rawText = text;
       placeholder.sentences = sentenceSplit(text).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-      indexInverted(placeholder);
+      // index tokens
+      placeholder.sentences.forEach(s=>s.tokens.forEach(t=>{
+        if(!state.inverted[t]) state.inverted[t]=new Set();
+        state.inverted[t].add(placeholder.id);
+      }));
       renderResources();
     }catch(err){
       placeholder.rawText = `Erreur lors de la récupération: ${err.message||err}`;
@@ -537,7 +642,10 @@ document.getElementById('addResBtn').addEventListener('click', async ()=>{
       const text = await readPdfFile(file);
       stub.rawText = text || '(PDF sans texte détectable)';
       stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-      indexInverted(stub);
+      stub.sentences.forEach(s=>s.tokens.forEach(t=>{
+        if(!state.inverted[t]) state.inverted[t]=new Set();
+        state.inverted[t].add(stub.id);
+      }));
       renderResources();
     }catch(err){
       stub.rawText = `ERREUR lecture PDF : ${err.message||err}`;
@@ -558,11 +666,10 @@ document.getElementById('resourceList').addEventListener('click', (e)=>{
   } else if(action==='view'){
     const r = state.resources.find(x=>x.id===id);
     if(!r) return;
-    alert(`Contenu intégral (${r.title}):\n\n` + r.rawText.slice(0,5000));
+    openModalForResource(id);
   } else if(action==='export'){
     const r = state.resources.find(x=>x.id===id);
     if(!r) return;
-    // download as txt
     const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -594,31 +701,6 @@ document.getElementById('clearChat').addEventListener('click', ()=>{
   }
 });
 
-/* share panel toggle */
-document.getElementById('shareBtn').addEventListener('click', ()=>{
-  const p = document.getElementById('sharePanel');
-  if(p.style.display === 'block'){
-    p.style.display = 'none';
-    document.getElementById('shareBtn').textContent = 'Partager';
-  } else {
-    // generate a temporary share link (placeholder)
-    const link = 'https://example.local/agent/' + Math.random().toString(36).slice(2,8);
-    document.getElementById('shareLink').value = link;
-    p.style.display = 'block';
-    document.getElementById('shareBtn').textContent = 'Fermer';
-  }
-});
-document.getElementById('closeShare').addEventListener('click', ()=>{
-  document.getElementById('sharePanel').style.display = 'none';
-  document.getElementById('shareBtn').textContent = 'Partager';
-});
-document.getElementById('copyShare').addEventListener('click', ()=>{
-  const link = document.getElementById('shareLink');
-  link.select(); link.setSelectionRange(0,99999);
-  document.execCommand('copy');
-  alert('Lien copié.');
-});
-
 /* feedback block handlers */
 document.querySelectorAll('#ratingRow .rating-star').forEach(el=>{
   el.addEventListener('click', (ev)=>{
@@ -642,27 +724,37 @@ document.getElementById('saveFeedbackRes').addEventListener('click', ()=>{
 });
 document.getElementById('cancelFeedback').addEventListener('click', ()=>closeFeedbackBlock());
 
-/* initial sample resources to show usage */
+/* messages click for feedback/transfer already handled in appendMessage by wire-up on elements */
+
+/* modal handling */
+function openModalForResource(id){
+  const r = state.resources.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('modalTitle').textContent = `${r.title || r.type} — ${r.category}`;
+  document.getElementById('modalBody').textContent = r.rawText || '(vide)';
+  const mb = document.getElementById('modalBackdrop');
+  mb.style.display = 'flex';
+  mb.setAttribute('aria-hidden','false');
+}
+document.getElementById('closeModal').addEventListener('click', ()=>{
+  const mb = document.getElementById('modalBackdrop');
+  mb.style.display = 'none';
+  mb.setAttribute('aria-hidden','true');
+});
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('modalBackdrop')){
+    document.getElementById('modalBackdrop').style.display = 'none';
+  }
+});
+
+/* initial sample resources */
 addResource({type:'note', title:'Guide sécurité', category:'Help', rawText:
 `Pour utiliser l'extincteur : tirer la goupille, viser la base du feu et pulvériser en balayant. Ne pas utiliser sur équipements électriques sous tension sans protection.` , meta:{}});
 addResource({type:'note', title:'Procédure backup', category:'Process', rawText:
 `La procédure de backup se fait quotidiennement à 02:00. Les étapes : stop services, dump base, compresser, chiffrer, envoyer sur l'archive.` , meta:{}});
 
-/* helper: escape on paste of long text? not needed */
-
-/* small UX: clicking on messages' feedback should open the feedback panel automatically */
-document.getElementById('messages').addEventListener('click', (e)=>{
-  const a = e.target.closest('.link-small');
-  if(!a) return;
-  const act = a.dataset.action;
-  if(act === 'feedback') openFeedbackBlock();
-  if(act === 'transfer') transferToHuman();
-});
-
-/* expose some debug on window for dev */
-window.miniIA = {
-  state, addResource, retrieveAnswer, renderResources
-};
+/* expose debug */
+window.miniIA = { state, addResource, retrieveAnswer, renderResources };
 
 </script>
 </body>
