@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Your New Agent — Mini Chat IA</title>
 
-<!-- PDF.js -->
+<!-- PDF.js (used for PDF text extraction client-side) -->
 <script src="https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.min.js"></script>
 
 <style>
   :root{
+    /* default Ice theme values */
     --bg: #f5f6fa;
     --accent: #cad0db;
     --secondary: #1179cf;
@@ -24,16 +25,17 @@
     --right-w: 70%;
     --gap: 12px;
     --avatar-size: 16px;
+    --typing-speed: 8; /* ms per char */
+    --transition-fast: 160ms;
 
     font-family: Inter, system-ui, Arial, sans-serif;
-    --transition-fast: 160ms;
   }
 
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);}
 
   /* Top sticky bar */
   header.appbar{
-    position:sticky;top:0;left:0;right:0;z-index:120;
+    position:sticky;top:0;left:0;right:0;z-index:200;
     display:flex;align-items:center;justify-content:space-between;
     gap:12px;padding:10px 18px;background:var(--card);
     border-bottom:4px solid var(--border);
@@ -43,10 +45,10 @@
   .appbar .tools{display:flex;gap:8px;align-items:center}
 
   /* main area */
-  .app{display:flex;gap:var(--gap);padding:18px;height:calc(100vh - 64px);box-sizing:border-box;}
+  .app{display:flex;gap:var(--gap);padding:18px;height:calc(100vh - 64px);box-sizing:border-box;overflow:hidden;}
 
   /* left column */
-  .col-left{width:var(--left-w);display:flex;flex-direction:column;gap:12px;transition:all var(--transition-fast) ease;}
+  .col-left{width:var(--left-w);display:flex;flex-direction:column;gap:12px;transition:all var(--transition-fast) ease;height:100%;}
   .col-left.hidden{display:none;width:0;padding:0;margin:0;opacity:0}
   .panel{background:var(--card);border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);overflow:auto;border:1px solid var(--border)}
   .add-wrapper{background:var(--contrast-bg);border:1px solid var(--contrast-border);padding:10px;border-radius:8px;margin-bottom:8px}
@@ -71,7 +73,7 @@
   .hide-btn{background:transparent;color:var(--text);padding:6px 8px;border-radius:6px;border:1px solid var(--border);cursor:pointer}
 
   /* right column */
-  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width var(--transition-fast) ease;}
+  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width var(--transition-fast) ease;height:100%;}
   .col-right.full{width:100%}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
 
@@ -80,7 +82,7 @@
 
   /* chat */
   .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:hidden;position:relative}
-  .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:18px;padding-right:4px;padding-left:8px}
+  .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:18px;padding-right:12px;padding-left:28px}
   .msg-wrap{position:relative;display:flex;flex-direction:column;gap:6px}
   .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);background:var(--card);border:1px solid var(--border);color:var(--text);position:relative}
   .message.user{align-self:flex-end;border-top-right-radius:2px}
@@ -90,12 +92,13 @@
   /* avatars outside bubbles */
   .avatar-agent, .avatar-user{
     width:var(--avatar-size);height:var(--avatar-size);border-radius:50%;position:absolute;bottom:-8px;box-shadow:0 1px 3px rgba(0,0,0,0.12);border:2px solid var(--card);
+    z-index:2;
   }
-  .avatar-agent{left:-26px;background:#3030ff}
-  .avatar-user{right:-26px;background:#1ee8b6}
+  .avatar-agent{left:8px;background:#3030ff}
+  .avatar-user{right:8px;background:#1ee8b6}
 
   /* sticky input area */
-  .controls-wrapper{position:sticky;bottom:12px;z-index:20;padding-top:8px;background:transparent}
+  .controls-wrapper{position:sticky;bottom:12px;z-index:30;padding-top:8px;background:transparent}
   .controls{display:flex;gap:8px;align-items:center;padding:12px;background:var(--card);border-radius:8px;box-shadow:0 -3px 12px rgba(0,0,0,0.03);width:100%;border:1px solid var(--border)}
   .topic-cloud{display:flex;gap:8px;flex-wrap:wrap}
   .link-small{font-size:13px;color:var(--link);cursor:pointer;text-decoration:underline;background:none;border:0;padding:0}
@@ -107,7 +110,7 @@
   .pdf-dropzone.dragover{background:rgba(0,0,0,0.03)}
 
   /* modal */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:220}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:400}
   .modal{background:var(--card);border-radius:8px;padding:16px;max-width:90%;max-height:80%;overflow:auto;border:1px solid var(--border)}
   .modal pre{white-space:pre-wrap;word-break:break-word;background:transparent;padding:12px;border-radius:6px;font-size:13px;color:var(--text)}
 
@@ -303,7 +306,7 @@
 /* PDF worker */
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.9.179/build/pdf.worker.min.js';
 
-/* TRANSLATIONS */
+/* translations */
 const T = {
   fr: {
     modify: "Modifier",
@@ -353,7 +356,7 @@ const T = {
   }
 };
 
-/* THEMES */
+/* themes */
 const THEMES = {
   "Bronze": {"--bg":"#5c1500","--accent":"#751b02","--secondary":"#ff7a4a","--border":"#824e3d","--text":"#000000","--link":"#ff7a4a","--card":"#f7efe8","--contrast-bg":"#f6e6dd","--contrast-border":"#e0b89a"},
   "Ice": {"--bg":"#f5f6fa","--accent":"#cad0db","--secondary":"#1179cf","--border":"#a9b4c7","--text":"#3b4f73","--link":"#1179cf","--card":"#ffffff","--contrast-bg":"#eef3fb","--contrast-border":"#d7e1ee"},
@@ -361,7 +364,7 @@ const THEMES = {
   "Serious Office": {"--bg":"#4a3954","--accent":"#3a2a45","--secondary":"#02b1d9","--border":"#675d70","--text":"#d3ced6","--link":"#02b1d9","--card":"#3e3140","--contrast-bg":"#41323f","--contrast-border":"#5f5362"}
 };
 
-/* STATE */
+/* state */
 const state = {
   resources: [],
   inverted: {},
@@ -371,7 +374,7 @@ const state = {
   ui: { selectedType: 'note', selectedCategory: 'Help', selectedTopic: '', leftVisible: false, latestUserQuestion: '' }
 };
 
-/* utilities */
+/* helpers */
 function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 function normalizeText(s){ return (s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
 function tokenize(s){ return normalizeText(s).split(/[^a-z0-9àâäéèêëîïôöùûüç'-]+/).filter(t=>t && t.length>1); }
@@ -379,28 +382,35 @@ function sentenceSplit(text){ const raw=(text||'').replace(/\r/g,' ').replace(/\
 function buildTf(tokens){ const tf={}; tokens.forEach(t=>tf[t]=(tf[t]||0)+1); const L=tokens.length||1; Object.keys(tf).forEach(k=>tf[k]=tf[k]/L); return tf; }
 function scoreTf(tfQ, tfD){ let dot=0,nQ=0,nD=0; for(const k in tfQ) nQ+=tfQ[k]*tfQ[k]; for(const k in tfD) nD+=tfD[k]*tfD[k]; for(const k in tfQ) if(tfD[k]) dot+=tfQ[k]*tfD[k]; if(nQ===0||nD===0) return 0; return dot/(Math.sqrt(nQ)*Math.sqrt(nD)); }
 
-/* apply theme */
+/* theme application */
 function applyTheme(name){
   const map = THEMES[name]; if(!map) return;
-  const root = document.documentElement; Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
-  document.body.style.background = getComputedStyle(root).getPropertyValue('--bg');
-  document.querySelectorAll('.btn').forEach(b => b.style.color = getComputedStyle(root).getPropertyValue('--text'));
-  document.querySelectorAll('.link-small').forEach(l => l.style.color = getComputedStyle(root).getPropertyValue('--link'));
-  document.getElementById('addWrapperTitle').style.color = getComputedStyle(root).getPropertyValue('--text');
+  Object.keys(map).forEach(k=>document.documentElement.style.setProperty(k, map[k]));
+  document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+  // update dynamic colors
+  document.querySelectorAll('.btn').forEach(b=>b.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text'));
+  document.querySelectorAll('.link-small').forEach(l=>l.style.color = getComputedStyle(document.documentElement).getPropertyValue('--link'));
+  state.settings.style = name;
 }
 
-/* tag cloud setup */
+/* tag clouds */
 function setupTagCloud(id, initial, cb){
   const cont = document.getElementById(id); if(!cont) return;
-  cont.querySelectorAll('.tag-item').forEach(el=>{ el.addEventListener('click', ()=> { cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); if(cb) cb(el.dataset.value); }); });
+  cont.querySelectorAll('.tag-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); if(cb) cb(el.dataset.value); });
+  });
   const sel = cont.querySelector('.tag-item[data-value="'+initial+'"]'); if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
 }
 
-/* resources rendering */
-function renderResources(){ const cont = document.getElementById('resourceList'); cont.innerHTML = ''; state.resources.forEach(r=>{ const div = document.createElement('div'); div.className = 'resource-item'; div.innerHTML = `
+/* resources render */
+function renderResources(){
+  const cont = document.getElementById('resourceList'); cont.innerHTML = '';
+  state.resources.forEach(r=>{
+    const div = document.createElement('div'); div.className='resource-item';
+    div.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1">
-          <strong style="color:var(--text)">${escapeHtml(r.title || r.type)}</strong>
+          <strong style="color:var(--text)">${escapeHtml(r.title||r.type)}</strong>
           <div class="meta"><span class="tag">${escapeHtml(r.category)}</span><span style="margin-left:8px;color:var(--text)">${escapeHtml(r.type.toUpperCase())}</span></div>
         </div>
         <div class="resource-controls"><button class="btn ghost" data-id="${r.id}" data-action="delete">${translate('clear')}</button></div>
@@ -409,17 +419,46 @@ function renderResources(){ const cont = document.getElementById('resourceList')
       <div style="display:flex;gap:8px;align-items:center">
         <button class="link-small" data-id="${r.id}" data-action="view">${translate('viewAll')}</button>
         <button class="link-small" data-id="${r.id}" data-action="export">${translate('exportText')}</button>
-      </div>`; cont.appendChild(div); }); }
+      </div>`;
+    cont.appendChild(div);
+  });
+}
 
 /* add/delete resource */
-function addResource(obj){ const id = 'r'+(++state.resourceCounter); const sentences = sentenceSplit(obj.rawText||'').map(s=>{ const tokens=tokenize(s); return {text:s,tokens,tf:buildTf(tokens)}; }).filter(x=>x.tokens.length>0); const r = {id,type:obj.type,title:obj.title||obj.type,category:obj.category,rawText:obj.rawText,meta:obj.meta||{},sentences}; state.resources.push(r); r.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(r.id); })); renderResources(); return r; }
+function addResource(obj){
+  const id = 'r'+(++state.resourceCounter);
+  const sentences = sentenceSplit(obj.rawText||'').map(s=>{ const tokens=tokenize(s); return {text:s,tokens,tf:buildTf(tokens)}; }).filter(x=>x.tokens.length>0);
+  const r = {id,type:obj.type,title:obj.title||obj.type,category:obj.category,rawText:obj.rawText,meta:obj.meta||{},sentences};
+  state.resources.push(r);
+  r.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(r.id); }));
+  renderResources(); return r;
+}
 function deleteResource(id){ state.resources = state.resources.filter(r=>r.id!==id); renderResources(); }
 
 /* fetch / pdf */
-async function fetchUrlText(url){ try{ const resp = await fetch(url, {mode:'cors'}); const ct = resp.headers.get('content-type') || ''; if(ct.includes('text/html')){ const html = await resp.text(); const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,''); const text = cleaned.replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' '); return text.substring(0,20000); } else return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').'; }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); } }
-async function readPdfFile(file){ const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise; let fullText = ''; for(let i=1;i<=pdf.numPages;i++){ try{ const page = await pdf.getPage(i); const txt = await page.getTextContent(); const t = txt.items.map(it => it.str).join(' '); fullText += t + ' '; } catch(err){ console.warn('pdf page read error',err); } } return fullText; }
+async function fetchUrlText(url){
+  try{
+    const resp = await fetch(url, {mode:'cors'});
+    const ct = resp.headers.get('content-type') || '';
+    if(ct.includes('text/html')){
+      const html = await resp.text();
+      const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
+      const text = cleaned.replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' ');
+      return text.substring(0,20000);
+    } else return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').';
+  }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); }
+}
+async function readPdfFile(file){
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  let fullText = '';
+  for(let i=1;i<=pdf.numPages;i++){
+    try{ const page = await pdf.getPage(i); const txt = await page.getTextContent(); const t = txt.items.map(it => it.str).join(' '); fullText += t + ' '; } catch(err){ console.warn('pdf page read error',err); }
+  }
+  return fullText;
+}
 
-/* retrieval (NO leading dashes) */
+/* retrieval WITHOUT dash prefix */
 function retrieveAnswer(question, chosenTopic){
   const qtokens = tokenize(question || '');
   const qtf = buildTf(qtokens);
@@ -435,59 +474,58 @@ function retrieveAnswer(question, chosenTopic){
   const bestScore = top.length ? top[0].score : 0;
   const threshold = 0.06;
   if(bestScore < threshold) return {found:false};
-  const used = new Set(), snippets = [];
+  const used = new Set(), snippets=[];
   for(const c of top){
     if(snippets.length>=8) break;
     const key = c.resource.id + '||' + c.text.slice(0,30);
     if(!used.has(key)){ snippets.push(c); used.add(key); }
   }
   const resourceIds = Array.from(new Set(snippets.map(s=>s.resource.id)));
-  // Build answer WITHOUT leading "- "
   let answer = (chosenTopic ? ('Contexte (topic: ' + chosenTopic + ').\n\n') : '');
   snippets.forEach(s=>{ answer += s.text + '\n'; });
   return {found:true,answer,resources:resourceIds};
 }
 
-/* typing animation */
-function typeText(el, text, speed=12){
+/* typing */
+function typeText(el, text, speed=8){
   return new Promise(resolve=>{
     let i=0; el.textContent=''; const iv = setInterval(()=>{ el.textContent += text.charAt(i); i++; if(i>=text.length){ clearInterval(iv); resolve(); } }, speed);
   });
 }
 
-/* appendMessage with avatars and typing for agent */
+/* appendMessage */
 async function appendMessage(role, text, meta){
   const messagesDiv = document.getElementById('messages');
-  const wrap = document.createElement('div'); wrap.className = 'msg-wrap';
+  const wrap = document.createElement('div'); wrap.className='msg-wrap';
   const el = document.createElement('div'); el.className = 'message ' + (role==='user' ? 'user' : 'agent');
-  const body = document.createElement('div'); body.className = 'msg-body';
+  const body = document.createElement('div'); body.className='msg-body';
   el.appendChild(body);
 
   // avatar
   const avatar = document.createElement('div'); avatar.className = (role==='user' ? 'avatar-user' : 'avatar-agent');
 
-  // position avatar outside bubble: attach to wrapper so it's visually outside
-  wrap.appendChild(el);
-  wrap.appendChild(avatar);
-  messagesDiv.appendChild(wrap);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-  if(role==='agent'){
+  // append bubble and avatar
+  // place avatar outside bubble by adding to wrapper after bubble
+  if(role === 'agent'){
+    wrap.appendChild(el);
+    wrap.appendChild(avatar);
+    messagesDiv.appendChild(wrap);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
     // typing effect
-    await typeText(body, text, 8);
-    // clickable sources (only buttons)
+    await typeText(body, text, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--typing-speed')) || 8);
+    // clickable sources
     if(meta && meta.resources && meta.resources.length){
       const sr = document.createElement('div'); sr.style.marginTop='8px';
       const list = document.createElement('div'); list.style.display='flex'; list.style.gap='8px'; list.style.flexWrap='wrap';
       meta.resources.forEach(rid=>{
         const r = state.resources.find(x=>x.id===rid);
-        const btn = document.createElement('button'); btn.className='tag-item';
-        btn.textContent = r ? (r.title || r.type) : rid;
+        const btn = document.createElement('button'); btn.className='tag-item'; btn.textContent = r ? (r.title || r.type) : rid;
         btn.addEventListener('click', ()=> openModalForResource(rid));
         list.appendChild(btn);
       });
       sr.appendChild(list); el.appendChild(sr);
     }
+    // actions
     const actions = document.createElement('div'); actions.style.marginTop='8px';
     const fb = document.createElement('button'); fb.className='link-small'; fb.textContent = translate('informAgent');
     fb.addEventListener('click', ()=> openFeedbackBlockWithQuestion(state.ui.latestUserQuestion));
@@ -495,6 +533,10 @@ async function appendMessage(role, text, meta){
     hl.addEventListener('click', ()=> openHelpModal());
     actions.appendChild(fb); actions.appendChild(hl); el.appendChild(actions);
   } else {
+    // user
+    wrap.appendChild(el);
+    wrap.appendChild(avatar);
+    messagesDiv.appendChild(wrap);
     body.textContent = text;
   }
 
@@ -502,12 +544,13 @@ async function appendMessage(role, text, meta){
   state.messages.push({role,text,meta,ts:Date.now()});
 }
 
-/* TRANSLATION helper */
+/* translate helper */
 function translate(key){ const lang = state.settings.lang || 'fr'; const dict = T[lang] || T['fr']; return dict[key] || key; }
 
 /* DOM wiring */
 document.addEventListener('DOMContentLoaded', ()=>{
 
+  // tag clouds
   setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
     state.ui.selectedType = v;
     document.getElementById('inputNote').style.display = v==='note' ? 'block' : 'none';
@@ -520,7 +563,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type = v);
   setupTagCloud('langTags', state.settings.lang, (v)=> { state.settings.lang = v; applyLanguage(); });
 
-  /* pdf dropzone */
+  // pdf dropzone
   const pdfDropzone = document.getElementById('pdfDropzone');
   const pdfInput = document.getElementById('resPdfFile');
   pdfDropzone.addEventListener('click', ()=> pdfInput.click());
@@ -528,21 +571,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   pdfDropzone.addEventListener('dragleave', ()=> pdfDropzone.classList.remove('dragover'));
   pdfDropzone.addEventListener('drop', (e)=>{ e.preventDefault(); pdfDropzone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if(f) pdfInput.files = e.dataTransfer.files; });
 
-  /* panels */
+  // panels
   const sharePanel = document.getElementById('sharePanel');
   const settingsPanel = document.getElementById('settingsPanel');
   const subscriptionPanel = document.getElementById('subscriptionPanel');
 
   document.getElementById('shareBtn').addEventListener('click', ()=> {
     sharePanel.style.display = sharePanel.style.display==='block' ? 'none' : 'block';
-    settingsPanel.style.display='none'; subscriptionPanel.style.display='none';
+    settingsPanel.style.display = 'none';
+    subscriptionPanel.style.display = 'none';
   });
   document.getElementById('closeShare').addEventListener('click', ()=> sharePanel.style.display='none');
   document.getElementById('copyShare').addEventListener('click', ()=> { const link=document.getElementById('shareLink'); link.select(); document.execCommand('copy'); alert(state.settings.lang==='en' ? 'Link copied' : 'Lien copié'); });
 
   document.getElementById('settingsBtn').addEventListener('click', ()=> {
     settingsPanel.style.display = settingsPanel.style.display==='block' ? 'none' : 'block';
-    sharePanel.style.display='none'; subscriptionPanel.style.display='none';
+    sharePanel.style.display='none';
+    subscriptionPanel.style.display='none';
     document.getElementById('agentName').value = state.settings.name;
     document.getElementById('supportEmail').value = state.settings.supportEmail || '';
     document.getElementById('supportTel').value = state.settings.supportTel || '';
@@ -557,20 +602,24 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('subscriptionBtn').addEventListener('click', ()=> {
     subscriptionPanel.style.display = subscriptionPanel.style.display==='block' ? 'none' : 'block';
-    sharePanel.style.display='none'; settingsPanel.style.display='none';
+    sharePanel.style.display='none';
+    settingsPanel.style.display='none';
   });
   document.getElementById('closeSubscription').addEventListener('click', ()=> subscriptionPanel.style.display='none');
 
-  /* topbar modify / hide left */
+  // modify / hide left
   const leftCol = document.getElementById('leftCol'); const rightCol = document.getElementById('rightCol');
   const modifyBtnTop = document.getElementById('modifyBtnTop'); const hideLeftBtn = document.getElementById('hideLeft');
   function showLeft(){ state.ui.leftVisible = true; leftCol.classList.remove('hidden'); rightCol.classList.remove('full'); modifyBtnTop.style.display='none'; }
   function hideLeft(){ state.ui.leftVisible = false; leftCol.classList.add('hidden'); rightCol.classList.add('full'); modifyBtnTop.style.display='inline-block'; }
-  modifyBtnTop.addEventListener('click', showLeft); hideLeftBtn.addEventListener('click', hideLeft); hideLeft();
+  modifyBtnTop.addEventListener('click', showLeft); hideLeftBtn.addEventListener('click', hideLeft);
+  // initial: left hidden
+  hideLeft();
 
-  /* add resource */
+  // add resource
   document.getElementById('addResBtn').addEventListener('click', async ()=>{
-    const type = state.ui.selectedType; const category = state.ui.selectedCategory; const title = document.getElementById('resTitle').value || '';
+    const type = state.ui.selectedType; const category = state.ui.selectedCategory;
+    const title = document.getElementById('resTitle').value || '';
     if(type==='note'){
       const content = document.getElementById('resContent').value || '';
       if(!content.trim()){ alert(state.settings.lang === 'en' ? 'Please add text.' : 'Veuillez ajouter du texte.'); return; }
@@ -592,33 +641,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   });
 
-  /* resource list events */
+  // resource list actions
   document.getElementById('resourceList').addEventListener('click', (e)=>{
-    const btn = e.target.closest('button'); if(!btn) return;
-    const id = btn.dataset.id; const action = btn.dataset.action;
+    const btn = e.target.closest('button'); if(!btn) return; const id = btn.dataset.id; const action = btn.dataset.action;
     if(action==='delete'){ if(confirm(state.settings.lang==='en' ? 'Delete resource?' : 'Supprimer cette ressource ?')) deleteResource(id); }
     else if(action==='view'){ openModalForResource(id); }
     else if(action==='export'){ const r = state.resources.find(x=>x.id===id); if(!r) return; const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = (r.title||r.id)+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
   });
 
-  /* clear form */
-  document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value=''; document.getElementById('resPdfFile').value=''; });
+  // clear form
+  document.getElementById('clearResBtn').addEventListener('click', ()=> {
+    document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value=''; document.getElementById('resPdfFile').value='';
+  });
 
-  /* send */
-  document.getElementById('sendBtn').addEventListener('click', async ()=> {
+  // send question
+  document.getElementById('sendBtn').addEventListener('click', async ()=>{
     const q = document.getElementById('queryInput').value.trim(); if(!q) return;
     state.ui.latestUserQuestion = q; await appendMessage('user', q); document.getElementById('queryInput').value='';
     const res = retrieveAnswer(q, state.ui.selectedTopic);
-    if(!res.found){ await appendMessage('agent', translate('noAnswer')); return; } await appendMessage('agent', res.answer, {resources: res.resources});
+    if(!res.found){ await appendMessage('agent', translate('noAnswer')); return; }
+    await appendMessage('agent', res.answer, {resources: res.resources});
   });
   document.getElementById('queryInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); } });
 
-  /* reset */
+  // reset
   document.getElementById('resetChatTop').addEventListener('click', ()=> {
     if(confirm(state.settings.lang==='en' ? 'Reset conversation?' : 'Réinitialiser la discussion ?')){ document.getElementById('messages').innerHTML=''; state.messages=[]; }
   });
 
-  /* save settings */
+  // settings save
   document.getElementById('saveSettings').addEventListener('click', ()=>{
     state.settings.name = document.getElementById('agentName').value || state.settings.name;
     state.settings.supportEmail = document.getElementById('supportEmail').value || '';
@@ -629,16 +680,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('settingsPanel').style.display='none';
   });
 
-  /* modal wiring */
+  // modal
   document.getElementById('closeModal').addEventListener('click', ()=> { document.getElementById('modalBackdrop').style.display='none'; });
   document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display='none'; });
 
-  /* initial theme/lang */
-  applyTheme(state.settings.style); applyLanguage();
+  // initial apply
+  applyTheme(state.settings.style);
+  applyLanguage();
+}); // DOMContentLoaded end
 
-}); /* DOMContentLoaded end */
-
-/* modal open */
+/* open modal for resource */
 function openModalForResource(id){
   const r = state.resources.find(x=>x.id===id); if(!r) return;
   document.getElementById('modalTitle').textContent = (r.title || r.type) + ' — ' + (r.category || '');
@@ -646,7 +697,7 @@ function openModalForResource(id){
   document.getElementById('modalBackdrop').style.display = 'flex';
 }
 
-/* Feedback: open left and autopopulate */
+/* feedback: open left and populate */
 function openFeedbackBlockWithQuestion(question){
   const leftCol = document.getElementById('leftCol'); const rightCol = document.getElementById('rightCol'); const modifyBtnTop = document.getElementById('modifyBtnTop');
   leftCol.classList.remove('hidden'); rightCol.classList.remove('full'); modifyBtnTop.style.display='none';
@@ -657,19 +708,23 @@ function openFeedbackBlockWithQuestion(question){
   document.getElementById('resources-panel').scrollTop = 0;
 }
 
-/* Help modal */
+/* help modal */
 function openHelpModal(){
   const lang = state.settings.lang || 'fr'; const dict = T[lang];
-  const title = dict.helpModalTitle; const text = dict.helpModalText; const email = state.settings.supportEmail || ''; const tel = state.settings.supportTel || '';
-  document.getElementById('modalTitle').textContent = title; const body = document.getElementById('modalBody'); body.innerHTML = escapeHtml(text) + '\n\n';
+  const title = dict.helpModalTitle; const text = dict.helpModalText;
+  const email = state.settings.supportEmail || ''; const tel = state.settings.supportTel || '';
+  document.getElementById('modalTitle').textContent = title;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = escapeHtml(text) + '\n\n';
   const prev = document.getElementById('helpControls'); if(prev) prev.remove();
-  const controls = document.createElement('div'); controls.id = 'helpControls'; controls.style.marginTop='12px';
-  const btnEmail = document.createElement('button'); btnEmail.className='btn'; btnEmail.style.marginRight='8px'; btnEmail.textContent = (lang==='en' ? 'Email' : 'Email');
-  btnEmail.onclick = ()=> { if(email) window.location.href = 'mailto:'+email; else alert(lang==='en' ? 'No email provided' : "Aucun email renseigné"); };
-  const btnTel = document.createElement('button'); btnTel.className='btn'; btnTel.textContent = (lang==='en' ? 'Tel' : 'Tél');
-  btnTel.onclick = ()=> { if(tel) window.location.href = 'tel:'+tel; else alert(lang==='en' ? 'No phone provided' : "Aucun numéro renseigné"); };
-  controls.appendChild(btnEmail); controls.appendChild(btnTel); body.appendChild(controls);
-  document.getElementById('modalBackdrop').style.display = 'flex';
+  const controls = document.createElement('div'); controls.id='helpControls'; controls.style.marginTop='12px';
+  const btnEmail = document.createElement('button'); btnEmail.className='btn'; btnEmail.style.marginRight='8px'; btnEmail.textContent = (state.settings.lang==='en' ? 'Email' : 'Email');
+  btnEmail.onclick = ()=> { if(email) window.location.href = 'mailto:'+email; else alert(state.settings.lang==='en' ? 'No email provided' : "Aucun email renseigné"); };
+  const btnTel = document.createElement('button'); btnTel.className='btn'; btnTel.textContent = (state.settings.lang==='en' ? 'Tel' : 'Tél');
+  btnTel.onclick = ()=> { if(tel) window.location.href = 'tel:'+tel; else alert(state.settings.lang==='en' ? 'No phone provided' : "Aucun numéro renseigné"); };
+  controls.appendChild(btnEmail); controls.appendChild(btnTel);
+  body.appendChild(controls);
+  document.getElementById('modalBackdrop').style.display='flex';
 }
 
 /* apply language */
@@ -694,6 +749,7 @@ function translate(key){ const lang = state.settings.lang || 'fr'; const dict = 
 
 /* expose for debug */
 window.miniIA = { state, addResource, retrieveAnswer, renderResources, applyTheme, applyLanguage };
+
 </script>
 </body>
 </html>
