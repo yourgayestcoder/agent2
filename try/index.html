@@ -10,7 +10,7 @@
 
 <style>
   :root{
-    /* default (Ice) vars - will be overwritten by applyTheme */
+    /* default Ice (appliqué en JS au chargement aussi) */
     --bg: #f5f6fa;
     --accent: #cad0db;
     --secondary: #1179cf;
@@ -18,20 +18,23 @@
     --text: #3b4f73;
     --link: #1179cf;
     --card: #ffffff;
-    --contrast-bg: #eef1f6;
-    --contrast-border: #d6dbe3;
+    --contrast-bg: #eef3fb;
+    --contrast-border: #d7e1ee;
 
     --left-w: 30%;
     --right-w: 70%;
     --gap: 12px;
+    --avatar-size: 16px;
+
     font-family: Inter, system-ui, Arial, sans-serif;
+    --transition-fast: 160ms;
   }
 
   html,body{height:100%;margin:0;background:var(--bg);color:var(--text);}
 
   /* Top sticky bar */
   header.appbar{
-    position:sticky;top:0;left:0;right:0;z-index:80;
+    position:sticky;top:0;left:0;right:0;z-index:120;
     display:flex;align-items:center;justify-content:space-between;
     gap:12px;padding:10px 18px;background:var(--card);
     border-bottom:4px solid var(--border);
@@ -44,7 +47,7 @@
   .app{display:flex;gap:var(--gap);padding:18px;height:calc(100vh - 64px);box-sizing:border-box;}
 
   /* left column */
-  .col-left{width:var(--left-w);display:flex;flex-direction:column;gap:12px;transition:all .18s ease;}
+  .col-left{width:var(--left-w);display:flex;flex-direction:column;gap:12px;transition:all var(--transition-fast) ease;}
   .col-left.hidden{display:none;width:0;padding:0;margin:0;opacity:0}
   .panel{background:var(--card);border-radius:8px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04);overflow:auto;border:1px solid var(--border)}
   .add-wrapper{background:var(--contrast-bg);border:1px solid var(--contrast-border);padding:10px;border-radius:8px;margin-bottom:8px}
@@ -60,7 +63,7 @@
 
   /* tag clouds (no dropdowns) */
   .tag-cloud{display:flex;flex-wrap:wrap;gap:8px}
-  .tag-item{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;font-weight:600;font-size:13px;color:var(--text)}
+  .tag-item{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;font-weight:600;font-size:13px;color:var(--text);transition:background var(--transition-fast)}
   .tag-item.sel{background:var(--accent);color:var(--text);border-color:var(--accent)}
 
   /* controls/buttons */
@@ -69,7 +72,7 @@
   .hide-btn{background:transparent;color:var(--text);padding:6px 8px;border-radius:6px;border:1px solid var(--border);cursor:pointer}
 
   /* right column */
-  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width .18s ease;}
+  .col-right{width:var(--right-w);display:flex;flex-direction:column;gap:12px;transition:width var(--transition-fast) ease;}
   .col-right.full{width:100%}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
 
@@ -79,10 +82,18 @@
   /* chat */
   .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:hidden;position:relative}
   .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
-  .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);background:var(--card);border:1px solid var(--border);color:var(--text)}
-  .message.user{align-self:flex-end}
-  .message.agent{align-self:flex-start}
-  .msg-body{white-space:pre-wrap}
+  .msg-wrap{position:relative;display:flex;flex-direction:column;gap:6px}
+  .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);background:var(--card);border:1px solid var(--border);color:var(--text);position:relative}
+  .message.user{align-self:flex-end;border-top-right-radius:2px}
+  .message.agent{align-self:flex-start;border-top-left-radius:2px}
+  .msg-body{white-space:pre-wrap;min-height:10px}
+
+  /* avatars outside bubbles */
+  .avatar-agent, .avatar-user{
+    width:var(--avatar-size);height:var(--avatar-size);border-radius:50%;position:absolute;bottom:-8px;box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  }
+  .avatar-agent{left:-22px;background:#3030ff;border:2px solid var(--card)}
+  .avatar-user{right:-22px;background:#1ee8b6;border:2px solid var(--card)}
 
   /* sticky input area */
   .controls-wrapper{position:sticky;bottom:12px;z-index:20;padding-top:8px;background:transparent}
@@ -90,8 +101,14 @@
   .topic-cloud{display:flex;gap:8px;flex-wrap:wrap}
   .link-small{font-size:13px;color:var(--link);cursor:pointer;text-decoration:underline;background:none;border:0;padding:0}
 
+  /* pdf dropzone */
+  .pdf-dropzone{
+    display:flex;align-items:center;justify-content:center;padding:12px;border-radius:8px;border:1px dashed var(--border);cursor:pointer;background:transparent;color:var(--text);
+  }
+  .pdf-dropzone.dragover{background:rgba(0,0,0,0.03)}
+
   /* modal */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:120}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:220}
   .modal{background:var(--card);border-radius:8px;padding:16px;max-width:90%;max-height:80%;overflow:auto;border:1px solid var(--border)}
   .modal pre{white-space:pre-wrap;word-break:break-word;background:transparent;padding:12px;border-radius:6px;font-size:13px;color:var(--text)}
 
@@ -107,11 +124,10 @@
 </style>
 </head>
 <body>
-<!-- top bar -->
 <header class="appbar" role="banner">
   <div style="display:flex;align-items:center;gap:12px">
     <div class="app-title" id="appTitle">Your New Agent</div>
-    <div style="font-size:13px;color:var(--text);opacity:0.85" id="appSubtitle"></div>
+    <div id="appSubtitle" style="font-size:13px;color:var(--text);opacity:0.85"></div>
   </div>
   <div class="tools" role="toolbar" aria-label="Outils">
     <button id="modifyBtnTop" class="btn ghost">Modifier</button>
@@ -132,7 +148,7 @@
       </div>
 
       <div class="add-wrapper" id="addWrapper">
-        <h4>Ajouter une ressource</h4>
+        <h4 id="addWrapperTitle">Ajouter une ressource</h4>
         <form id="addForm" class="add-resource-form" onsubmit="return false;">
           <label class="small">Type</label>
           <div id="typeTags" class="tag-cloud" role="radiogroup" aria-label="Type">
@@ -160,11 +176,14 @@
           <div id="inputUrl" style="display:none">
             <label class="small">URL</label>
             <input id="resUrl" placeholder="https://..." type="text"/>
+            <label class="small">Contexte (description)</label>
+            <input id="resUrlContext" placeholder="Description courte du lien" type="text"/>
           </div>
 
           <div id="inputPdf" style="display:none">
             <label class="small">PDF</label>
-            <input id="resPdfFile" type="file" accept="application/pdf"/>
+            <div id="pdfDropzone" class="pdf-dropzone">Cliquez ou déposez un fichier PDF ici</div>
+            <input id="resPdfFile" type="file" accept="application/pdf" style="display:none"/>
           </div>
 
           <div style="display:flex;gap:8px;">
@@ -182,7 +201,7 @@
   <div class="col-right full" id="rightCol">
     <div class="panel-inline" id="sharePanel" aria-hidden="true" style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong style="color:var(--text)" id="shareTitle">Lien de partage</strong>
+        <strong id="shareTitle" style="color:var(--text)">Lien de partage</strong>
         <button id="closeShare" class="btn ghost">Fermer</button>
       </div>
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
@@ -262,9 +281,7 @@
           <button id="sendBtn" class="btn">Envoyer</button>
         </div>
 
-        <div class="disclaimer" id="disclaimer">
-          <!-- filled by JS -->
-        </div>
+        <div class="disclaimer" id="disclaimer"></div>
       </div>
     </div>
   </div>
@@ -299,7 +316,7 @@ const T = {
     clear: "Effacer",
     addResourceTitle: "Ajouter une ressource",
     noAnswer: "Il semble que je n’ai pas la réponse à cette information.",
-    giveFeedback: "Donner un feedback et améliorer l'exactitude",
+    informAgent: "Informer l’agent",
     helpLabel: "Aide",
     helpModalTitle: "Aide & contact",
     helpModalText: "L’auteur de l'agent vous suggère d'accéder à l'aide en utilisant ces coordonnées.",
@@ -322,7 +339,7 @@ const T = {
     clear: "Clear",
     addResourceTitle: "Add a resource",
     noAnswer: "It seems I don't have the answer to that information.",
-    giveFeedback: "Give feedback and improve accuracy",
+    informAgent: "Inform the agent",
     helpLabel: "Help",
     helpModalTitle: "Help & contact",
     helpModalText: "The author of the agent suggests contacting support using these details.",
@@ -340,48 +357,16 @@ const T = {
 /* THEMES */
 const THEMES = {
   "Bronze": {
-    "--bg":"#5c1500",
-    "--accent":"#751b02",
-    "--secondary":"#ff7a4a",
-    "--border":"#824e3d",
-    "--text":"#000000",
-    "--link":"#ff7a4a",
-    "--card":"#f7efe8",
-    "--contrast-bg":"#f6e6dd",
-    "--contrast-border":"#e0b89a"
+    "--bg":"#5c1500","--accent":"#751b02","--secondary":"#ff7a4a","--border":"#824e3d","--text":"#000000","--link":"#ff7a4a","--card":"#f7efe8","--contrast-bg":"#f6e6dd","--contrast-border":"#e0b89a"
   },
   "Ice": {
-    "--bg":"#f5f6fa",
-    "--accent":"#cad0db",
-    "--secondary":"#1179cf",
-    "--border":"#a9b4c7",
-    "--text":"#3b4f73",
-    "--link":"#1179cf",
-    "--card":"#ffffff",
-    "--contrast-bg":"#eef3fb",
-    "--contrast-border":"#d7e1ee"
+    "--bg":"#f5f6fa","--accent":"#cad0db","--secondary":"#1179cf","--border":"#a9b4c7","--text":"#3b4f73","--link":"#1179cf","--card":"#ffffff","--contrast-bg":"#eef3fb","--contrast-border":"#d7e1ee"
   },
   "Funky": {
-    "--bg":"#400d40",
-    "--accent":"#360c36",
-    "--secondary":"#1066a3",
-    "--border":"#664966",
-    "--text":"#cfc4cf",
-    "--link":"#1066a3",
-    "--card":"#2b122b",
-    "--contrast-bg":"#371233",
-    "--contrast-border":"#613a4e"
+    "--bg":"#400d40","--accent":"#360c36","--secondary":"#1066a3","--border":"#664966","--text":"#cfc4cf","--link":"#1066a3","--card":"#2b122b","--contrast-bg":"#371233","--contrast-border":"#613a4e"
   },
   "Serious Office": {
-    "--bg":"#4a3954",
-    "--accent":"#3a2a45",
-    "--secondary":"#02b1d9",
-    "--border":"#675d70",
-    "--text":"#d3ced6",
-    "--link":"#02b1d9",
-    "--card":"#3e3140",
-    "--contrast-bg":"#41323f",
-    "--contrast-border":"#5f5362"
+    "--bg":"#4a3954","--accent":"#3a2a45","--secondary":"#02b1d9","--border":"#675d70","--text":"#d3ced6","--link":"#02b1d9","--card":"#3e3140","--contrast-bg":"#41323f","--contrast-border":"#5f5362"
   }
 };
 
@@ -422,11 +407,13 @@ function applyTheme(name){
   if(!map) return;
   const root = document.documentElement;
   Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
-  // update buttons and links color
-  document.querySelectorAll('.btn').forEach(b => b.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text'));
-  document.querySelectorAll('.link-small').forEach(l => l.style.color = getComputedStyle(document.documentElement).getPropertyValue('--link'));
-  // update background of body
-  document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+  // colors for dynamic elements
+  document.body.style.background = getComputedStyle(root).getPropertyValue('--bg');
+  // update visible elements styling if necessary
+  document.querySelectorAll('.btn').forEach(b => b.style.color = getComputedStyle(root).getPropertyValue('--text'));
+  document.querySelectorAll('.link-small').forEach(l => l.style.color = getComputedStyle(root).getPropertyValue('--link'));
+  // update add-wrapper contrast (already uses CSS variables)
+  document.getElementById('addWrapperTitle').style.color = getComputedStyle(root).getPropertyValue('--text');
 }
 
 /* tag cloud setup */
@@ -440,18 +427,15 @@ function setupTagCloud(id, initial, cb){
       if(cb) cb(el.dataset.value);
     });
   });
-  // initial select
   const sel = cont.querySelector('.tag-item[data-value="'+initial+'"]');
   if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
 }
 
 /* resources */
 function renderResources(){
-  const cont = document.getElementById('resourceList');
-  cont.innerHTML = '';
+  const cont = document.getElementById('resourceList'); cont.innerHTML = '';
   state.resources.forEach(r=>{
-    const div = document.createElement('div');
-    div.className = 'resource-item';
+    const div = document.createElement('div'); div.className = 'resource-item';
     div.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1">
@@ -480,7 +464,7 @@ function addResource(obj){
 }
 function deleteResource(id){ state.resources = state.resources.filter(r=>r.id!==id); renderResources(); }
 
-/* fetch / pdf */
+/* fetch / pdf reading */
 async function fetchUrlText(url){
   try{
     const resp = await fetch(url, {mode:'cors'});
@@ -490,7 +474,7 @@ async function fetchUrlText(url){
       const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
       const text = cleaned.replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' ');
       return text.substring(0,20000);
-    } else { return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').'; }
+    } else return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').';
   }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); }
 }
 async function readPdfFile(file){
@@ -504,8 +488,7 @@ async function readPdfFile(file){
   return fullText;
 }
 
-/* CHAT / retrieval (note: answer text will NOT include "Sources citées:" string;
-   sources are presented as clickable buttons only) */
+/* CHAT / retrieval (answer text does not include "Sources cited" string) */
 function retrieveAnswer(question, chosenTopic){
   const qtokens = tokenize(question || '');
   const qtf = buildTf(qtokens);
@@ -530,20 +513,41 @@ function retrieveAnswer(question, chosenTopic){
   const resourceIds = Array.from(new Set(snippets.map(s=>s.resource.id)));
   let answer = (chosenTopic ? ('Contexte (topic: ' + chosenTopic + ').\n\n') : '');
   snippets.forEach(s=>{ answer += '- ' + s.text + '\n'; });
-  // DO NOT append "Sources citées" to the answer text; caller will render clickable sources separately
   return {found:true,answer,resources:resourceIds};
 }
 
-/* appendMessage: no name/time in bubbles per request */
-function appendMessage(role, text, meta){
+/* typing function: types text into an element quickly, returns Promise */
+function typeText(el, text, speed=12){
+  return new Promise(resolve=>{
+    let i=0;
+    el.textContent = '';
+    const iv = setInterval(()=>{ el.textContent += text.charAt(i); i++; if(i>=text.length){ clearInterval(iv); resolve(); } }, speed);
+  });
+}
+
+/* appendMessage: no name/time in bubbles; for agent will type the text */
+async function appendMessage(role, text, meta){
   const messagesDiv = document.getElementById('messages');
-  const el = document.createElement('div');
-  el.className = 'message ' + (role==='user' ? 'user' : 'agent');
-  const body = document.createElement('div'); body.className = 'msg-body'; body.innerHTML = escapeHtml(text).replace(/\n/g,'<br>');
+  const wrap = document.createElement('div'); wrap.className = 'msg-wrap';
+  const el = document.createElement('div'); el.className = 'message ' + (role==='user' ? 'user' : 'agent');
+  const body = document.createElement('div'); body.className = 'msg-body';
   el.appendChild(body);
 
+  // append avatars outside bubbles
   if(role==='agent'){
-    // Add sources as clickable tag buttons (only these)
+    const avatar = document.createElement('div'); avatar.className = 'avatar-agent'; wrap.appendChild(avatar);
+  } else {
+    const avatar = document.createElement('div'); avatar.className = 'avatar-user'; wrap.appendChild(avatar);
+  }
+
+  wrap.appendChild(el);
+  messagesDiv.appendChild(wrap);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  if(role==='agent'){
+    // typing animation
+    await typeText(body, text, 8); // speed param (lower = faster) => quick typing
+    // show clickable sources (if any)
     if(meta && meta.resources && meta.resources.length){
       const sr = document.createElement('div'); sr.style.marginTop='8px';
       const list = document.createElement('div'); list.style.display='flex'; list.style.gap='8px'; list.style.flexWrap='wrap';
@@ -556,31 +560,29 @@ function appendMessage(role, text, meta){
       });
       sr.appendChild(list); el.appendChild(sr);
     }
-    // actions: feedback & help
+    // actions: Informer l'agent and Help
     const actions = document.createElement('div'); actions.style.marginTop='8px';
-    const fb = document.createElement('button'); fb.className='link-small'; fb.textContent = translate('giveFeedback');
+    const fb = document.createElement('button'); fb.className='link-small'; fb.textContent = translate('informAgent');
     fb.addEventListener('click', ()=> openFeedbackBlockWithQuestion(state.ui.latestUserQuestion));
     const hl = document.createElement('button'); hl.className='link-small'; hl.style.marginLeft='8px'; hl.textContent = translate('helpLabel');
     hl.addEventListener('click', ()=> openHelpModal());
     actions.appendChild(fb); actions.appendChild(hl); el.appendChild(actions);
+  } else {
+    // user: just show text, plus help? No extra actions
+    body.textContent = text;
   }
 
-  messagesDiv.appendChild(el);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
   state.messages.push({role,text,meta,ts:Date.now()});
 }
 
 /* TRANSLATION helper */
-function translate(key){
-  const lang = state.settings.lang || 'fr';
-  const dict = T[lang] || T['fr'];
-  return dict[key] || key;
-}
+function translate(key){ const lang = state.settings.lang || 'fr'; const dict = T[lang] || T['fr']; return dict[key] || key; }
 
 /* UI wiring on DOMContentLoaded */
 document.addEventListener('DOMContentLoaded', ()=>{
 
-  /* initial UI wiring and tag-clouds */
+  /* tag clouds */
   setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
     state.ui.selectedType = v;
     document.getElementById('inputNote').style.display = v==='note' ? 'block' : 'none';
@@ -598,19 +600,29 @@ document.addEventListener('DOMContentLoaded', ()=>{
     applyLanguage();
   });
 
+  /* PDF dropzone wiring */
+  const pdfDropzone = document.getElementById('pdfDropzone');
+  const pdfInput = document.getElementById('resPdfFile');
+  pdfDropzone.addEventListener('click', ()=> pdfInput.click());
+  pdfDropzone.addEventListener('dragover', (e)=>{ e.preventDefault(); pdfDropzone.classList.add('dragover'); });
+  pdfDropzone.addEventListener('dragleave', ()=> pdfDropzone.classList.remove('dragover'));
+  pdfDropzone.addEventListener('drop', (e)=>{ e.preventDefault(); pdfDropzone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if(f) pdfInput.files = e.dataTransfer.files; });
+
   /* panels */
   const sharePanel = document.getElementById('sharePanel');
   const settingsPanel = document.getElementById('settingsPanel');
   const subscriptionPanel = document.getElementById('subscriptionPanel');
 
+  // SHARE btn (topbar)
   document.getElementById('shareBtn').addEventListener('click', ()=> {
     sharePanel.style.display = sharePanel.style.display==='block' ? 'none' : 'block';
     settingsPanel.style.display = 'none';
     subscriptionPanel.style.display = 'none';
   });
   document.getElementById('closeShare').addEventListener('click', ()=> sharePanel.style.display='none');
-  document.getElementById('copyShare').addEventListener('click', ()=> { const link=document.getElementById('shareLink'); link.select(); document.execCommand('copy'); alert( state.settings.lang === 'en' ? 'Link copied' : 'Lien copié'); });
+  document.getElementById('copyShare').addEventListener('click', ()=> { const link=document.getElementById('shareLink'); link.select(); document.execCommand('copy'); alert(state.settings.lang==='en' ? 'Link copied' : 'Lien copié'); });
 
+  // SETTINGS
   document.getElementById('settingsBtn').addEventListener('click', ()=> {
     settingsPanel.style.display = settingsPanel.style.display==='block' ? 'none' : 'block';
     sharePanel.style.display='none';
@@ -619,7 +631,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('agentName').value = state.settings.name;
     document.getElementById('supportEmail').value = state.settings.supportEmail || '';
     document.getElementById('supportTel').value = state.settings.supportTel || '';
-    // update lang tag selection UI
     setupTagCloud('langTags', state.settings.lang, (v)=>{ state.settings.lang = v; applyLanguage(); });
   });
   document.getElementById('closeSettings').addEventListener('click', ()=> {
@@ -627,20 +638,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.settings.supportEmail = document.getElementById('supportEmail').value || '';
     state.settings.supportTel = document.getElementById('supportTel').value || '';
     document.getElementById('appTitle').textContent = state.settings.name;
-    document.getElementById('agentName').value = state.settings.name;
+    applyTheme(state.settings.style);
     applyLanguage();
-    document.getElementById('settingsPanel').style.display='none';
+    settingsPanel.style.display='none';
   });
 
+  // SUBSCRIPTION
   document.getElementById('subscriptionBtn').addEventListener('click', ()=> {
     subscriptionPanel.style.display = subscriptionPanel.style.display==='block' ? 'none' : 'block';
     sharePanel.style.display = 'none';
     settingsPanel.style.display = 'none';
   });
   document.getElementById('closeSubscription').addEventListener('click', ()=> subscriptionPanel.style.display='none');
-  document.getElementById('upgradeBtn').addEventListener('click', ()=> alert(state.settings.lang === 'en' ? 'Mock: upgrade options' : 'Mock : options de mise à niveau'));
+  document.getElementById('upgradeBtn').addEventListener('click', ()=> alert(state.settings.lang==='en' ? 'Mock: upgrade options' : 'Mock : options de mise à niveau'));
 
-  /* Topbar buttons: modify toggles left column */
+  // Topbar modify / hide left
   const leftCol = document.getElementById('leftCol');
   const rightCol = document.getElementById('rightCol');
   const modifyBtnTop = document.getElementById('modifyBtnTop');
@@ -666,28 +678,29 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById('resContent').value=''; document.getElementById('resTitle').value='';
     } else if(type==='url'){
       const url = document.getElementById('resUrl').value.trim();
+      const ctx = document.getElementById('resUrlContext').value.trim();
       if(!url){ alert(state.settings.lang === 'en' ? 'URL missing' : 'URL manquante'); return; }
-      const stub = addResource({type:'url',title: title||url,category,rawText:'(fetching: '+url+')',meta:{url}});
+      const stub = addResource({type:'url',title: title||url,category,rawText: ctx ? (ctx + '\n\n' + url) : url,meta:{url,context:ctx}});
       try{
         const text = await fetchUrlText(url);
-        stub.rawText = text;
-        stub.sentences = sentenceSplit(text).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
+        stub.rawText += '\n\n' + text;
+        stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
         stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
         renderResources();
-      }catch(err){ stub.rawText = 'Error: '+(err.message||err); renderResources(); }
-      document.getElementById('resUrl').value='';
+      }catch(err){ stub.rawText += '\n\n' + ('Erreur: '+(err.message||err)); renderResources(); }
+      document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value='';
     } else if(type==='pdf'){
       const fileInput = document.getElementById('resPdfFile');
       if(!fileInput.files || fileInput.files.length===0){ alert(state.settings.lang === 'en' ? 'Choose a PDF' : 'Choisissez un PDF'); return; }
       const file = fileInput.files[0];
-      const stub = addResource({type:'pdf',title: title||file.name,category,rawText:'(reading PDF: '+file.name+')',meta:{fileName:file.name}});
+      const stub = addResource({type:'pdf',title: title||file.name,category,rawText:'(lecture PDF en cours: '+file.name+')',meta:{fileName:file.name}});
       try{
         const text = await readPdfFile(file);
-        stub.rawText = text || '(PDF empty)';
+        stub.rawText = text || '(PDF sans texte)';
         stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
         stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
         renderResources();
-      }catch(err){ stub.rawText = 'PDF ERROR: '+(err.message||err); renderResources(); }
+      }catch(err){ stub.rawText = 'ERREUR PDF: '+(err.message||err); renderResources(); }
       fileInput.value='';
     }
   });
@@ -704,27 +717,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 
   /* clear form */
-  document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resPdfFile').value=''; });
+  document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value=''; document.getElementById('resPdfFile').value=''; });
 
-  /* send message */
+  /* send (user question) */
   document.getElementById('sendBtn').addEventListener('click', async ()=> {
     const q = document.getElementById('queryInput').value.trim();
     if(!q) return;
     state.ui.latestUserQuestion = q;
-    appendMessage('user', q);
+    await appendMessage('user', q);
     document.getElementById('queryInput').value='';
     const res = retrieveAnswer(q, state.ui.selectedTopic);
-    if(!res.found){ appendMessage('agent', translate('noAnswer')); return; }
-    appendMessage('agent', res.answer, {resources: res.resources});
+    if(!res.found){ await appendMessage('agent', translate('noAnswer')); return; }
+    await appendMessage('agent', res.answer, {resources: res.resources});
   });
   document.getElementById('queryInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); } });
 
-  /* reset top button */
+  /* reset top */
   document.getElementById('resetChatTop').addEventListener('click', ()=> {
     if(confirm(state.settings.lang==='en' ? 'Reset conversation?' : 'Réinitialiser la discussion ?')){ document.getElementById('messages').innerHTML=''; state.messages=[]; }
   });
 
-  /* settings save */
+  /* save settings */
   document.getElementById('saveSettings').addEventListener('click', ()=>{
     state.settings.name = document.getElementById('agentName').value || state.settings.name;
     state.settings.supportEmail = document.getElementById('supportEmail').value || '';
@@ -736,23 +749,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.getElementById('settingsPanel').style.display='none';
   });
 
-  /* panels toggles */
-  document.getElementById('shareBtn').addEventListener('click', ()=> {
-    const el = document.getElementById('sharePanel'); el.style.display = el.style.display==='block' ? 'none' : 'block';
-    document.getElementById('settingsPanel').style.display='none'; document.getElementById('subscriptionPanel').style.display='none';
-  });
-  document.getElementById('subscriptionBtn').addEventListener('click', ()=> {
-    const el = document.getElementById('subscriptionPanel'); el.style.display = el.style.display==='block' ? 'none' : 'block';
-    document.getElementById('settingsPanel').style.display='none'; document.getElementById('sharePanel').style.display='none';
-  });
-
-  /* modal handlers */
+  /* help modal wiring */
   document.getElementById('closeModal').addEventListener('click', ()=> { document.getElementById('modalBackdrop').style.display='none'; });
   document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display='none'; });
 
-  /* initial theme and language */
+  /* initial theme and language apply */
   applyTheme(state.settings.style);
-  applyLanguage(); // will set UI text + disclaimer etc.
+  applyLanguage();
 }); /* DOMContentLoaded end */
 
 /* open modal to show resource content */
@@ -766,14 +769,17 @@ function openModalForResource(id){
 
 /* Feedback: open left, show add block, focus title and autopopulate content with question */
 function openFeedbackBlockWithQuestion(question){
-  // show left if hidden
-  const leftCol = document.getElementById('leftCol'); const rightCol = document.getElementById('rightCol'); const modifyBtnTop = document.getElementById('modifyBtnTop');
+  const leftCol = document.getElementById('leftCol');
+  const rightCol = document.getElementById('rightCol');
+  const modifyBtnTop = document.getElementById('modifyBtnTop');
   leftCol.classList.remove('hidden'); rightCol.classList.remove('full'); modifyBtnTop.style.display='none';
-  // show feedback by focusing resTitle and filling resContent
-  document.getElementById('resTitle').focus();
-  document.getElementById('resTitle').value = (question ? (question.length>60 ? question.substring(0,57)+'...' : question) : '');
-  document.getElementById('resContent').value = question || '';
-  // scroll to add wrapper
+  // autofocus title and populate content
+  const titleEl = document.getElementById('resTitle');
+  const contentEl = document.getElementById('resContent');
+  titleEl.focus();
+  titleEl.value = (question ? (question.length>60 ? question.substring(0,57)+'...' : question) : '');
+  contentEl.value = question || '';
+  // scroll to top of resources panel
   document.getElementById('resources-panel').scrollTop = 0;
 }
 
@@ -788,16 +794,13 @@ function openHelpModal(){
   document.getElementById('modalTitle').textContent = title;
   const body = document.getElementById('modalBody');
   body.innerHTML = escapeHtml(text) + '\n\n';
-  const wrap = document.getElementById('modalBodyWrap');
-  // append buttons
+  // remove previous controls
+  const prev = document.getElementById('helpControls'); if(prev) prev.remove();
+  const controls = document.createElement('div'); controls.id = 'helpControls'; controls.style.marginTop='12px';
   const btnEmail = document.createElement('button'); btnEmail.className='btn'; btnEmail.style.marginRight='8px'; btnEmail.textContent = (lang==='en' ? 'Email' : 'Email');
   btnEmail.onclick = ()=> { if(email) window.location.href = 'mailto:'+email; else alert(lang==='en' ? 'No email provided' : "Aucun email renseigné"); };
   const btnTel = document.createElement('button'); btnTel.className='btn'; btnTel.textContent = (lang==='en' ? 'Tel' : 'Tél');
   btnTel.onclick = ()=> { if(tel) window.location.href = 'tel:'+tel; else alert(lang==='en' ? 'No phone provided' : "Aucun numéro renseigné"); };
-  // remove previous appended controls if any
-  const existingControls = document.getElementById('helpControls');
-  if(existingControls) existingControls.remove();
-  const controls = document.createElement('div'); controls.id = 'helpControls'; controls.style.marginTop='12px';
   controls.appendChild(btnEmail); controls.appendChild(btnTel);
   body.appendChild(controls);
   document.getElementById('modalBackdrop').style.display = 'flex';
@@ -806,37 +809,25 @@ function openHelpModal(){
 /* apply language to UI strings */
 function applyLanguage(){
   const lang = state.settings.lang || 'fr';
-  // topbar buttons
   document.getElementById('modifyBtnTop').textContent = translate('modify');
   document.getElementById('shareBtn').textContent = translate('share');
   document.getElementById('settingsBtn').textContent = translate('settings');
   document.getElementById('subscriptionBtn').textContent = translate('subscription');
   document.getElementById('resetChatTop').textContent = translate('reset');
-  // add resource wrapper title & buttons
-  document.querySelector('#addWrapper h4').textContent = translate('addResourceTitle');
+  document.getElementById('addWrapperTitle').textContent = translate('addResourceTitle');
   document.getElementById('addResBtn').textContent = translate('add');
   document.getElementById('clearResBtn').textContent = translate('clear');
-  // share panel title
   document.getElementById('shareTitle').textContent = translate('shareTitle');
-  // placeholders and labels
   document.getElementById('queryInput').placeholder = translate('agentPlaceholderQuestion');
-  // resource list buttons texts are rendered on renderResources
   renderResources();
-  // disclaimer
-  const disc = document.getElementById('disclaimer');
-  disc.innerHTML = (T[lang].disclaimer)(state.settings.name || 'Agent');
+  document.getElementById('disclaimer').innerHTML = (T[lang].disclaimer)(state.settings.name || 'Agent');
 }
 
-/* translate helper (already above) re-used here for convenience */
+/* translate helper */
 function translate(key){ const lang = state.settings.lang || 'fr'; const dict = T[lang] || T['fr']; return dict[key] || key; }
 
-/* expose some functions for debugging */
+/* expose for debug */
 window.miniIA = { state, addResource, retrieveAnswer, renderResources, applyTheme, applyLanguage };
-
-/* Ensure Ice theme default applied on initial load */
-applyTheme(state.settings.style);
-applyLanguage();
-
 </script>
 </body>
 </html>
