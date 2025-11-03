@@ -10,7 +10,6 @@
 
 <style>
   :root{
-    /* default Ice (appliqué en JS au chargement aussi) */
     --bg: #f5f6fa;
     --accent: #cad0db;
     --secondary: #1179cf;
@@ -81,7 +80,7 @@
 
   /* chat */
   .chat-panel{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:hidden;position:relative}
-  .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
+  .messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:18px;padding-right:4px;padding-left:8px}
   .msg-wrap{position:relative;display:flex;flex-direction:column;gap:6px}
   .message{max-width:75%;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);background:var(--card);border:1px solid var(--border);color:var(--text);position:relative}
   .message.user{align-self:flex-end;border-top-right-radius:2px}
@@ -90,10 +89,10 @@
 
   /* avatars outside bubbles */
   .avatar-agent, .avatar-user{
-    width:var(--avatar-size);height:var(--avatar-size);border-radius:50%;position:absolute;bottom:-8px;box-shadow:0 1px 3px rgba(0,0,0,0.12);
+    width:var(--avatar-size);height:var(--avatar-size);border-radius:50%;position:absolute;bottom:-8px;box-shadow:0 1px 3px rgba(0,0,0,0.12);border:2px solid var(--card);
   }
-  .avatar-agent{left:-22px;background:#3030ff;border:2px solid var(--card)}
-  .avatar-user{right:-22px;background:#1ee8b6;border:2px solid var(--card)}
+  .avatar-agent{left:-26px;background:#3030ff}
+  .avatar-user{right:-26px;background:#1ee8b6}
 
   /* sticky input area */
   .controls-wrapper{position:sticky;bottom:12px;z-index:20;padding-top:8px;background:transparent}
@@ -356,18 +355,10 @@ const T = {
 
 /* THEMES */
 const THEMES = {
-  "Bronze": {
-    "--bg":"#5c1500","--accent":"#751b02","--secondary":"#ff7a4a","--border":"#824e3d","--text":"#000000","--link":"#ff7a4a","--card":"#f7efe8","--contrast-bg":"#f6e6dd","--contrast-border":"#e0b89a"
-  },
-  "Ice": {
-    "--bg":"#f5f6fa","--accent":"#cad0db","--secondary":"#1179cf","--border":"#a9b4c7","--text":"#3b4f73","--link":"#1179cf","--card":"#ffffff","--contrast-bg":"#eef3fb","--contrast-border":"#d7e1ee"
-  },
-  "Funky": {
-    "--bg":"#400d40","--accent":"#360c36","--secondary":"#1066a3","--border":"#664966","--text":"#cfc4cf","--link":"#1066a3","--card":"#2b122b","--contrast-bg":"#371233","--contrast-border":"#613a4e"
-  },
-  "Serious Office": {
-    "--bg":"#4a3954","--accent":"#3a2a45","--secondary":"#02b1d9","--border":"#675d70","--text":"#d3ced6","--link":"#02b1d9","--card":"#3e3140","--contrast-bg":"#41323f","--contrast-border":"#5f5362"
-  }
+  "Bronze": {"--bg":"#5c1500","--accent":"#751b02","--secondary":"#ff7a4a","--border":"#824e3d","--text":"#000000","--link":"#ff7a4a","--card":"#f7efe8","--contrast-bg":"#f6e6dd","--contrast-border":"#e0b89a"},
+  "Ice": {"--bg":"#f5f6fa","--accent":"#cad0db","--secondary":"#1179cf","--border":"#a9b4c7","--text":"#3b4f73","--link":"#1179cf","--card":"#ffffff","--contrast-bg":"#eef3fb","--contrast-border":"#d7e1ee"},
+  "Funky": {"--bg":"#400d40","--accent":"#360c36","--secondary":"#1066a3","--border":"#664966","--text":"#cfc4cf","--link":"#1066a3","--card":"#2b122b","--contrast-bg":"#371233","--contrast-border":"#613a4e"},
+  "Serious Office": {"--bg":"#4a3954","--accent":"#3a2a45","--secondary":"#02b1d9","--border":"#675d70","--text":"#d3ced6","--link":"#02b1d9","--card":"#3e3140","--contrast-bg":"#41323f","--contrast-border":"#5f5362"}
 };
 
 /* STATE */
@@ -376,21 +367,8 @@ const state = {
   inverted: {},
   messages: [],
   resourceCounter: 0,
-  settings: {
-    name: 'Your New Agent',
-    style: 'Ice',     // default theme Ice
-    type: 'Interne',
-    lang: 'fr',       // default FR
-    supportEmail: '',
-    supportTel: ''
-  },
-  ui: {
-    selectedType: 'note',
-    selectedCategory: 'Help',
-    selectedTopic: '',
-    leftVisible: false,
-    latestUserQuestion: ''
-  }
+  settings: { name: 'Your New Agent', style: 'Ice', type: 'Interne', lang: 'fr', supportEmail: '', supportTel: '' },
+  ui: { selectedType: 'note', selectedCategory: 'Help', selectedTopic: '', leftVisible: false, latestUserQuestion: '' }
 };
 
 /* utilities */
@@ -403,40 +381,23 @@ function scoreTf(tfQ, tfD){ let dot=0,nQ=0,nD=0; for(const k in tfQ) nQ+=tfQ[k]*
 
 /* apply theme */
 function applyTheme(name){
-  const map = THEMES[name];
-  if(!map) return;
-  const root = document.documentElement;
-  Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
-  // colors for dynamic elements
+  const map = THEMES[name]; if(!map) return;
+  const root = document.documentElement; Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
   document.body.style.background = getComputedStyle(root).getPropertyValue('--bg');
-  // update visible elements styling if necessary
   document.querySelectorAll('.btn').forEach(b => b.style.color = getComputedStyle(root).getPropertyValue('--text'));
   document.querySelectorAll('.link-small').forEach(l => l.style.color = getComputedStyle(root).getPropertyValue('--link'));
-  // update add-wrapper contrast (already uses CSS variables)
   document.getElementById('addWrapperTitle').style.color = getComputedStyle(root).getPropertyValue('--text');
 }
 
 /* tag cloud setup */
 function setupTagCloud(id, initial, cb){
-  const cont = document.getElementById(id);
-  if(!cont) return;
-  cont.querySelectorAll('.tag-item').forEach(el=>{
-    el.addEventListener('click', ()=> {
-      cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel'));
-      el.classList.add('sel');
-      if(cb) cb(el.dataset.value);
-    });
-  });
-  const sel = cont.querySelector('.tag-item[data-value="'+initial+'"]');
-  if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
+  const cont = document.getElementById(id); if(!cont) return;
+  cont.querySelectorAll('.tag-item').forEach(el=>{ el.addEventListener('click', ()=> { cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); el.classList.add('sel'); if(cb) cb(el.dataset.value); }); });
+  const sel = cont.querySelector('.tag-item[data-value="'+initial+'"]'); if(sel){ cont.querySelectorAll('.tag-item').forEach(s=>s.classList.remove('sel')); sel.classList.add('sel'); }
 }
 
-/* resources */
-function renderResources(){
-  const cont = document.getElementById('resourceList'); cont.innerHTML = '';
-  state.resources.forEach(r=>{
-    const div = document.createElement('div'); div.className = 'resource-item';
-    div.innerHTML = `
+/* resources rendering */
+function renderResources(){ const cont = document.getElementById('resourceList'); cont.innerHTML = ''; state.resources.forEach(r=>{ const div = document.createElement('div'); div.className = 'resource-item'; div.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1">
           <strong style="color:var(--text)">${escapeHtml(r.title || r.type)}</strong>
@@ -448,47 +409,17 @@ function renderResources(){
       <div style="display:flex;gap:8px;align-items:center">
         <button class="link-small" data-id="${r.id}" data-action="view">${translate('viewAll')}</button>
         <button class="link-small" data-id="${r.id}" data-action="export">${translate('exportText')}</button>
-      </div>`;
-    cont.appendChild(div);
-  });
-}
+      </div>`; cont.appendChild(div); }); }
 
 /* add/delete resource */
-function addResource(obj){
-  const id = 'r'+(++state.resourceCounter);
-  const sentences = sentenceSplit(obj.rawText||'').map(s=>{ const tokens=tokenize(s); return {text:s,tokens,tf:buildTf(tokens)}; }).filter(x=>x.tokens.length>0);
-  const r = {id,type:obj.type,title:obj.title||obj.type,category:obj.category,rawText:obj.rawText,meta:obj.meta||{},sentences};
-  state.resources.push(r);
-  r.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(r.id); }));
-  renderResources(); return r;
-}
+function addResource(obj){ const id = 'r'+(++state.resourceCounter); const sentences = sentenceSplit(obj.rawText||'').map(s=>{ const tokens=tokenize(s); return {text:s,tokens,tf:buildTf(tokens)}; }).filter(x=>x.tokens.length>0); const r = {id,type:obj.type,title:obj.title||obj.type,category:obj.category,rawText:obj.rawText,meta:obj.meta||{},sentences}; state.resources.push(r); r.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(r.id); })); renderResources(); return r; }
 function deleteResource(id){ state.resources = state.resources.filter(r=>r.id!==id); renderResources(); }
 
-/* fetch / pdf reading */
-async function fetchUrlText(url){
-  try{
-    const resp = await fetch(url, {mode:'cors'});
-    const ct = resp.headers.get('content-type') || '';
-    if(ct.includes('text/html')){
-      const html = await resp.text();
-      const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
-      const text = cleaned.replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' ');
-      return text.substring(0,20000);
-    } else return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').';
-  }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); }
-}
-async function readPdfFile(file){
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
-  let fullText = '';
-  for(let i=1;i<=pdf.numPages;i++){
-    try{ const page = await pdf.getPage(i); const txt = await page.getTextContent(); const t = txt.items.map(it => it.str).join(' '); fullText += t + ' '; }
-    catch(err){ console.warn('pdf page read error',err); }
-  }
-  return fullText;
-}
+/* fetch / pdf */
+async function fetchUrlText(url){ try{ const resp = await fetch(url, {mode:'cors'}); const ct = resp.headers.get('content-type') || ''; if(ct.includes('text/html')){ const html = await resp.text(); const cleaned = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,''); const text = cleaned.replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' '); return text.substring(0,20000); } else return 'Contenu non-HTML récupéré depuis ' + url + ' (type: ' + ct + ').'; }catch(e){ return 'ERREUR_FETCH: impossible de récupérer (CORS ou réseau) : ' + (e.message||e); } }
+async function readPdfFile(file){ const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise; let fullText = ''; for(let i=1;i<=pdf.numPages;i++){ try{ const page = await pdf.getPage(i); const txt = await page.getTextContent(); const t = txt.items.map(it => it.str).join(' '); fullText += t + ' '; } catch(err){ console.warn('pdf page read error',err); } } return fullText; }
 
-/* CHAT / retrieval (answer text does not include "Sources cited" string) */
+/* retrieval (NO leading dashes) */
 function retrieveAnswer(question, chosenTopic){
   const qtokens = tokenize(question || '');
   const qtf = buildTf(qtokens);
@@ -511,21 +442,20 @@ function retrieveAnswer(question, chosenTopic){
     if(!used.has(key)){ snippets.push(c); used.add(key); }
   }
   const resourceIds = Array.from(new Set(snippets.map(s=>s.resource.id)));
+  // Build answer WITHOUT leading "- "
   let answer = (chosenTopic ? ('Contexte (topic: ' + chosenTopic + ').\n\n') : '');
-  snippets.forEach(s=>{ answer += '- ' + s.text + '\n'; });
+  snippets.forEach(s=>{ answer += s.text + '\n'; });
   return {found:true,answer,resources:resourceIds};
 }
 
-/* typing function: types text into an element quickly, returns Promise */
+/* typing animation */
 function typeText(el, text, speed=12){
   return new Promise(resolve=>{
-    let i=0;
-    el.textContent = '';
-    const iv = setInterval(()=>{ el.textContent += text.charAt(i); i++; if(i>=text.length){ clearInterval(iv); resolve(); } }, speed);
+    let i=0; el.textContent=''; const iv = setInterval(()=>{ el.textContent += text.charAt(i); i++; if(i>=text.length){ clearInterval(iv); resolve(); } }, speed);
   });
 }
 
-/* appendMessage: no name/time in bubbles; for agent will type the text */
+/* appendMessage with avatars and typing for agent */
 async function appendMessage(role, text, meta){
   const messagesDiv = document.getElementById('messages');
   const wrap = document.createElement('div'); wrap.className = 'msg-wrap';
@@ -533,21 +463,19 @@ async function appendMessage(role, text, meta){
   const body = document.createElement('div'); body.className = 'msg-body';
   el.appendChild(body);
 
-  // append avatars outside bubbles
-  if(role==='agent'){
-    const avatar = document.createElement('div'); avatar.className = 'avatar-agent'; wrap.appendChild(avatar);
-  } else {
-    const avatar = document.createElement('div'); avatar.className = 'avatar-user'; wrap.appendChild(avatar);
-  }
+  // avatar
+  const avatar = document.createElement('div'); avatar.className = (role==='user' ? 'avatar-user' : 'avatar-agent');
 
+  // position avatar outside bubble: attach to wrapper so it's visually outside
   wrap.appendChild(el);
+  wrap.appendChild(avatar);
   messagesDiv.appendChild(wrap);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
   if(role==='agent'){
-    // typing animation
-    await typeText(body, text, 8); // speed param (lower = faster) => quick typing
-    // show clickable sources (if any)
+    // typing effect
+    await typeText(body, text, 8);
+    // clickable sources (only buttons)
     if(meta && meta.resources && meta.resources.length){
       const sr = document.createElement('div'); sr.style.marginTop='8px';
       const list = document.createElement('div'); list.style.display='flex'; list.style.gap='8px'; list.style.flexWrap='wrap';
@@ -560,7 +488,6 @@ async function appendMessage(role, text, meta){
       });
       sr.appendChild(list); el.appendChild(sr);
     }
-    // actions: Informer l'agent and Help
     const actions = document.createElement('div'); actions.style.marginTop='8px';
     const fb = document.createElement('button'); fb.className='link-small'; fb.textContent = translate('informAgent');
     fb.addEventListener('click', ()=> openFeedbackBlockWithQuestion(state.ui.latestUserQuestion));
@@ -568,7 +495,6 @@ async function appendMessage(role, text, meta){
     hl.addEventListener('click', ()=> openHelpModal());
     actions.appendChild(fb); actions.appendChild(hl); el.appendChild(actions);
   } else {
-    // user: just show text, plus help? No extra actions
     body.textContent = text;
   }
 
@@ -579,10 +505,9 @@ async function appendMessage(role, text, meta){
 /* TRANSLATION helper */
 function translate(key){ const lang = state.settings.lang || 'fr'; const dict = T[lang] || T['fr']; return dict[key] || key; }
 
-/* UI wiring on DOMContentLoaded */
+/* DOM wiring */
 document.addEventListener('DOMContentLoaded', ()=>{
 
-  /* tag clouds */
   setupTagCloud('typeTags', state.ui.selectedType, (v)=> {
     state.ui.selectedType = v;
     document.getElementById('inputNote').style.display = v==='note' ? 'block' : 'none';
@@ -593,14 +518,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupTagCloud('topicCloud', state.ui.selectedTopic || '', (v)=> state.ui.selectedTopic = v);
   setupTagCloud('styleTags', state.settings.style, (v)=> { state.settings.style = v; applyTheme(v); });
   setupTagCloud('typeAgentTags', state.settings.type, (v)=> state.settings.type = v);
+  setupTagCloud('langTags', state.settings.lang, (v)=> { state.settings.lang = v; applyLanguage(); });
 
-  /* language tags */
-  setupTagCloud('langTags', state.settings.lang, (v)=> {
-    state.settings.lang = v;
-    applyLanguage();
-  });
-
-  /* PDF dropzone wiring */
+  /* pdf dropzone */
   const pdfDropzone = document.getElementById('pdfDropzone');
   const pdfInput = document.getElementById('resPdfFile');
   pdfDropzone.addEventListener('click', ()=> pdfInput.click());
@@ -613,104 +533,69 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const settingsPanel = document.getElementById('settingsPanel');
   const subscriptionPanel = document.getElementById('subscriptionPanel');
 
-  // SHARE btn (topbar)
   document.getElementById('shareBtn').addEventListener('click', ()=> {
     sharePanel.style.display = sharePanel.style.display==='block' ? 'none' : 'block';
-    settingsPanel.style.display = 'none';
-    subscriptionPanel.style.display = 'none';
+    settingsPanel.style.display='none'; subscriptionPanel.style.display='none';
   });
   document.getElementById('closeShare').addEventListener('click', ()=> sharePanel.style.display='none');
   document.getElementById('copyShare').addEventListener('click', ()=> { const link=document.getElementById('shareLink'); link.select(); document.execCommand('copy'); alert(state.settings.lang==='en' ? 'Link copied' : 'Lien copié'); });
 
-  // SETTINGS
   document.getElementById('settingsBtn').addEventListener('click', ()=> {
     settingsPanel.style.display = settingsPanel.style.display==='block' ? 'none' : 'block';
-    sharePanel.style.display='none';
-    subscriptionPanel.style.display='none';
-    // populate settings fields
+    sharePanel.style.display='none'; subscriptionPanel.style.display='none';
     document.getElementById('agentName').value = state.settings.name;
     document.getElementById('supportEmail').value = state.settings.supportEmail || '';
     document.getElementById('supportTel').value = state.settings.supportTel || '';
-    setupTagCloud('langTags', state.settings.lang, (v)=>{ state.settings.lang = v; applyLanguage(); });
   });
   document.getElementById('closeSettings').addEventListener('click', ()=> {
     state.settings.name = document.getElementById('agentName').value || state.settings.name;
     state.settings.supportEmail = document.getElementById('supportEmail').value || '';
     state.settings.supportTel = document.getElementById('supportTel').value || '';
     document.getElementById('appTitle').textContent = state.settings.name;
-    applyTheme(state.settings.style);
-    applyLanguage();
-    settingsPanel.style.display='none';
+    applyTheme(state.settings.style); applyLanguage(); settingsPanel.style.display='none';
   });
 
-  // SUBSCRIPTION
   document.getElementById('subscriptionBtn').addEventListener('click', ()=> {
     subscriptionPanel.style.display = subscriptionPanel.style.display==='block' ? 'none' : 'block';
-    sharePanel.style.display = 'none';
-    settingsPanel.style.display = 'none';
+    sharePanel.style.display='none'; settingsPanel.style.display='none';
   });
   document.getElementById('closeSubscription').addEventListener('click', ()=> subscriptionPanel.style.display='none');
-  document.getElementById('upgradeBtn').addEventListener('click', ()=> alert(state.settings.lang==='en' ? 'Mock: upgrade options' : 'Mock : options de mise à niveau'));
 
-  // Topbar modify / hide left
-  const leftCol = document.getElementById('leftCol');
-  const rightCol = document.getElementById('rightCol');
-  const modifyBtnTop = document.getElementById('modifyBtnTop');
-  const hideLeftBtn = document.getElementById('hideLeft');
-
+  /* topbar modify / hide left */
+  const leftCol = document.getElementById('leftCol'); const rightCol = document.getElementById('rightCol');
+  const modifyBtnTop = document.getElementById('modifyBtnTop'); const hideLeftBtn = document.getElementById('hideLeft');
   function showLeft(){ state.ui.leftVisible = true; leftCol.classList.remove('hidden'); rightCol.classList.remove('full'); modifyBtnTop.style.display='none'; }
   function hideLeft(){ state.ui.leftVisible = false; leftCol.classList.add('hidden'); rightCol.classList.add('full'); modifyBtnTop.style.display='inline-block'; }
+  modifyBtnTop.addEventListener('click', showLeft); hideLeftBtn.addEventListener('click', hideLeft); hideLeft();
 
-  modifyBtnTop.addEventListener('click', showLeft);
-  hideLeftBtn.addEventListener('click', hideLeft);
-  // initial: left hidden
-  hideLeft();
-
-  /* Add resource handlers */
+  /* add resource */
   document.getElementById('addResBtn').addEventListener('click', async ()=>{
-    const type = state.ui.selectedType;
-    const category = state.ui.selectedCategory;
-    const title = document.getElementById('resTitle').value || '';
+    const type = state.ui.selectedType; const category = state.ui.selectedCategory; const title = document.getElementById('resTitle').value || '';
     if(type==='note'){
       const content = document.getElementById('resContent').value || '';
       if(!content.trim()){ alert(state.settings.lang === 'en' ? 'Please add text.' : 'Veuillez ajouter du texte.'); return; }
       addResource({type:'note',title,category,rawText:content,meta:{}});
       document.getElementById('resContent').value=''; document.getElementById('resTitle').value='';
     } else if(type==='url'){
-      const url = document.getElementById('resUrl').value.trim();
-      const ctx = document.getElementById('resUrlContext').value.trim();
+      const url = document.getElementById('resUrl').value.trim(); const ctx = document.getElementById('resUrlContext').value.trim();
       if(!url){ alert(state.settings.lang === 'en' ? 'URL missing' : 'URL manquante'); return; }
       const stub = addResource({type:'url',title: title||url,category,rawText: ctx ? (ctx + '\n\n' + url) : url,meta:{url,context:ctx}});
-      try{
-        const text = await fetchUrlText(url);
-        stub.rawText += '\n\n' + text;
-        stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-        stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
-        renderResources();
-      }catch(err){ stub.rawText += '\n\n' + ('Erreur: '+(err.message||err)); renderResources(); }
+      try{ const text = await fetchUrlText(url); stub.rawText += '\n\n' + text; stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))})); stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); })); renderResources(); }catch(err){ stub.rawText += '\n\n' + ('Erreur: '+(err.message||err)); renderResources(); }
       document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value='';
     } else if(type==='pdf'){
       const fileInput = document.getElementById('resPdfFile');
       if(!fileInput.files || fileInput.files.length===0){ alert(state.settings.lang === 'en' ? 'Choose a PDF' : 'Choisissez un PDF'); return; }
       const file = fileInput.files[0];
       const stub = addResource({type:'pdf',title: title||file.name,category,rawText:'(lecture PDF en cours: '+file.name+')',meta:{fileName:file.name}});
-      try{
-        const text = await readPdfFile(file);
-        stub.rawText = text || '(PDF sans texte)';
-        stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))}));
-        stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); }));
-        renderResources();
-      }catch(err){ stub.rawText = 'ERREUR PDF: '+(err.message||err); renderResources(); }
+      try{ const text = await readPdfFile(file); stub.rawText = text || '(PDF sans texte)'; stub.sentences = sentenceSplit(stub.rawText).map(s=>({text:s,tokens:tokenize(s),tf:buildTf(tokenize(s))})); stub.sentences.forEach(s=>s.tokens.forEach(t=>{ if(!state.inverted[t]) state.inverted[t]=new Set(); state.inverted[t].add(stub.id); })); renderResources(); }catch(err){ stub.rawText = 'ERREUR PDF: '+(err.message||err); renderResources(); }
       fileInput.value='';
     }
   });
 
   /* resource list events */
   document.getElementById('resourceList').addEventListener('click', (e)=>{
-    const btn = e.target.closest('button');
-    if(!btn) return;
-    const id = btn.dataset.id;
-    const action = btn.dataset.action;
+    const btn = e.target.closest('button'); if(!btn) return;
+    const id = btn.dataset.id; const action = btn.dataset.action;
     if(action==='delete'){ if(confirm(state.settings.lang==='en' ? 'Delete resource?' : 'Supprimer cette ressource ?')) deleteResource(id); }
     else if(action==='view'){ openModalForResource(id); }
     else if(action==='export'){ const r = state.resources.find(x=>x.id===id); if(!r) return; const blob = new Blob([r.rawText], {type:'text/plain;charset=utf-8'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = (r.title||r.id)+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
@@ -719,20 +604,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* clear form */
   document.getElementById('clearResBtn').addEventListener('click', ()=> { document.getElementById('resTitle').value=''; document.getElementById('resContent').value=''; document.getElementById('resUrl').value=''; document.getElementById('resUrlContext').value=''; document.getElementById('resPdfFile').value=''; });
 
-  /* send (user question) */
+  /* send */
   document.getElementById('sendBtn').addEventListener('click', async ()=> {
-    const q = document.getElementById('queryInput').value.trim();
-    if(!q) return;
-    state.ui.latestUserQuestion = q;
-    await appendMessage('user', q);
-    document.getElementById('queryInput').value='';
+    const q = document.getElementById('queryInput').value.trim(); if(!q) return;
+    state.ui.latestUserQuestion = q; await appendMessage('user', q); document.getElementById('queryInput').value='';
     const res = retrieveAnswer(q, state.ui.selectedTopic);
-    if(!res.found){ await appendMessage('agent', translate('noAnswer')); return; }
-    await appendMessage('agent', res.answer, {resources: res.resources});
+    if(!res.found){ await appendMessage('agent', translate('noAnswer')); return; } await appendMessage('agent', res.answer, {resources: res.resources});
   });
   document.getElementById('queryInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); } });
 
-  /* reset top */
+  /* reset */
   document.getElementById('resetChatTop').addEventListener('click', ()=> {
     if(confirm(state.settings.lang==='en' ? 'Reset conversation?' : 'Réinitialiser la discussion ?')){ document.getElementById('messages').innerHTML=''; state.messages=[]; }
   });
@@ -743,70 +624,55 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.settings.supportEmail = document.getElementById('supportEmail').value || '';
     state.settings.supportTel = document.getElementById('supportTel').value || '';
     document.getElementById('appTitle').textContent = state.settings.name;
-    applyTheme(state.settings.style);
-    applyLanguage();
+    applyTheme(state.settings.style); applyLanguage();
     alert(state.settings.lang === 'en' ? 'Settings saved (local)' : 'Paramètres sauvegardés (local)');
     document.getElementById('settingsPanel').style.display='none';
   });
 
-  /* help modal wiring */
+  /* modal wiring */
   document.getElementById('closeModal').addEventListener('click', ()=> { document.getElementById('modalBackdrop').style.display='none'; });
   document.getElementById('modalBackdrop').addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display='none'; });
 
-  /* initial theme and language apply */
-  applyTheme(state.settings.style);
-  applyLanguage();
+  /* initial theme/lang */
+  applyTheme(state.settings.style); applyLanguage();
+
 }); /* DOMContentLoaded end */
 
-/* open modal to show resource content */
+/* modal open */
 function openModalForResource(id){
-  const r = state.resources.find(x=>x.id===id);
-  if(!r) return;
+  const r = state.resources.find(x=>x.id===id); if(!r) return;
   document.getElementById('modalTitle').textContent = (r.title || r.type) + ' — ' + (r.category || '');
   document.getElementById('modalBody').textContent = r.rawText || '';
   document.getElementById('modalBackdrop').style.display = 'flex';
 }
 
-/* Feedback: open left, show add block, focus title and autopopulate content with question */
+/* Feedback: open left and autopopulate */
 function openFeedbackBlockWithQuestion(question){
-  const leftCol = document.getElementById('leftCol');
-  const rightCol = document.getElementById('rightCol');
-  const modifyBtnTop = document.getElementById('modifyBtnTop');
+  const leftCol = document.getElementById('leftCol'); const rightCol = document.getElementById('rightCol'); const modifyBtnTop = document.getElementById('modifyBtnTop');
   leftCol.classList.remove('hidden'); rightCol.classList.remove('full'); modifyBtnTop.style.display='none';
-  // autofocus title and populate content
-  const titleEl = document.getElementById('resTitle');
-  const contentEl = document.getElementById('resContent');
+  const titleEl = document.getElementById('resTitle'); const contentEl = document.getElementById('resContent');
   titleEl.focus();
   titleEl.value = (question ? (question.length>60 ? question.substring(0,57)+'...' : question) : '');
   contentEl.value = question || '';
-  // scroll to top of resources panel
   document.getElementById('resources-panel').scrollTop = 0;
 }
 
-/* Help modal: show support contact from settings */
+/* Help modal */
 function openHelpModal(){
-  const lang = state.settings.lang || 'fr';
-  const dict = T[lang];
-  const title = dict.helpModalTitle;
-  const text = dict.helpModalText;
-  const email = state.settings.supportEmail || '';
-  const tel = state.settings.supportTel || '';
-  document.getElementById('modalTitle').textContent = title;
-  const body = document.getElementById('modalBody');
-  body.innerHTML = escapeHtml(text) + '\n\n';
-  // remove previous controls
+  const lang = state.settings.lang || 'fr'; const dict = T[lang];
+  const title = dict.helpModalTitle; const text = dict.helpModalText; const email = state.settings.supportEmail || ''; const tel = state.settings.supportTel || '';
+  document.getElementById('modalTitle').textContent = title; const body = document.getElementById('modalBody'); body.innerHTML = escapeHtml(text) + '\n\n';
   const prev = document.getElementById('helpControls'); if(prev) prev.remove();
   const controls = document.createElement('div'); controls.id = 'helpControls'; controls.style.marginTop='12px';
   const btnEmail = document.createElement('button'); btnEmail.className='btn'; btnEmail.style.marginRight='8px'; btnEmail.textContent = (lang==='en' ? 'Email' : 'Email');
   btnEmail.onclick = ()=> { if(email) window.location.href = 'mailto:'+email; else alert(lang==='en' ? 'No email provided' : "Aucun email renseigné"); };
   const btnTel = document.createElement('button'); btnTel.className='btn'; btnTel.textContent = (lang==='en' ? 'Tel' : 'Tél');
   btnTel.onclick = ()=> { if(tel) window.location.href = 'tel:'+tel; else alert(lang==='en' ? 'No phone provided' : "Aucun numéro renseigné"); };
-  controls.appendChild(btnEmail); controls.appendChild(btnTel);
-  body.appendChild(controls);
+  controls.appendChild(btnEmail); controls.appendChild(btnTel); body.appendChild(controls);
   document.getElementById('modalBackdrop').style.display = 'flex';
 }
 
-/* apply language to UI strings */
+/* apply language */
 function applyLanguage(){
   const lang = state.settings.lang || 'fr';
   document.getElementById('modifyBtnTop').textContent = translate('modify');
