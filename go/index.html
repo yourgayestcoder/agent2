@@ -1,122 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>DEBUG Supabase SignUp</title>
-<style>
-  body{font-family:Inter,system-ui,Arial,sans-serif;padding:18px;background:#f4f6fb;color:#16202a}
-  .card{max-width:900px;margin:18px auto;background:white;padding:16px;border-radius:8px;border:1px solid #e0e6ef}
-  label{display:block;margin-top:8px;font-weight:600}
-  input,textarea,select{width:100%;padding:8px;border-radius:6px;border:1px solid #cfd8e3;margin-top:6px}
-  button{margin-top:10px;padding:8px 12px;border-radius:6px;background:#1179cf;color:#fff;border:0;cursor:pointer}
-  pre{background:#0f1720;color:#dbeafe;padding:12px;border-radius:6px;overflow:auto;max-height:280px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .muted{font-size:13px;color:#6b7280}
-</style>
+<meta charset="UTF-8">
+<title>Registration / Login</title>
 </head>
 <body>
-  <div class="card">
-    <h2>Debug Supabase SignUp</h2>
-    <p class="muted">Colle ton SUPABASE_URL (ex: https://xyz.supabase.co) et ANON KEY, puis clique "Test signup". La page affichera la réponse de Supabase (status, body) et fera aussi un fetch brut vers /auth/v1/signup.</p>
 
-    <label>SUPABASE_URL</label>
-    <input id="supabaseUrl" placeholder="https://qjmqmcwoprhzzevpiytx.supabase.co" />
+<h2>Inscription</h2>
+<input type="text" id="newIdentifiant" placeholder="Créez votre identifiant">
+<button id="registerBtn">S'inscrire</button>
+<p id="generatedKey"></p>
 
-    <label>SUPABASE ANON KEY</label>
-    <input id="anonKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY" />
+<h2>Connexion</h2>
+<input type="text" id="loginIdentifiant" placeholder="Identifiant">
+<input type="text" id="loginKey" placeholder="Clé d'accès">
+<button id="loginBtn">Se connecter</button>
 
-    <div class="row">
-      <div>
-        <label>Email</label>
-        <input id="email" value="test@example.com" />
-      </div>
-      <div>
-        <label>Password</label>
-        <input id="password" value="Password123!" />
-      </div>
-    </div>
+<div id="result"></div>
 
-    <button id="testBtn">Test signUp() using supabase-js</button>
-    <button id="directBtn" style="background:#22c55e">Direct fetch to /auth/v1/signup</button>
-
-    <h3>supabase-js result (object)</h3>
-    <pre id="jsResult">—</pre>
-
-    <h3>Direct fetch result (/auth/v1/signup)</h3>
-    <pre id="fetchResult">—</pre>
-
-    <h3>Network hints</h3>
-    <pre id="hints">
-1) If fetch returns 401/403 — key invalid or auth endpoint rejects (check anon key).
-2) If fetch fails with CORS error in browser console but curl works — browser CORS issue.
-3) If signUp returns success but no auth.users row — maybe mail confirmation pending (check your project's Auth settings).
-4) Check Supabase Console: Auth -> Users (should list newly created user if signUp succeeded).
-    </pre>
-  </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const testBtn = document.getElementById('testBtn');
-const directBtn = document.getElementById('directBtn');
-const jsResult = document.getElementById('jsResult');
-const fetchResult = document.getElementById('fetchResult');
+const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"; // Remplace par ta clé
 
-function pretty(obj){ try{return JSON.stringify(obj, null, 2);}catch(e){return String(obj);} }
+const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-testBtn.addEventListener('click', async ()=>{
-  jsResult.textContent = 'Running...';
-  const SUPABASE_URL = document.getElementById('supabaseUrl').value.trim();
-  const SUPABASE_ANON_KEY = document.getElementById('anonKey').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+// Génère une clé aléatoire
+function generateKey(length = 18) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let key = "";
+  for (let i = 0; i < length; i++) {
+    key += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return key;
+}
 
-  if(!SUPABASE_URL || !SUPABASE_ANON_KEY){ jsResult.textContent = 'Provide SUPABASE_URL and ANON KEY.'; return; }
+// Enregistrement d'une instance
+document.getElementById("registerBtn").addEventListener("click", async () => {
+  const identifiant = document.getElementById("newIdentifiant").value.trim();
+  if(!identifiant) { alert("Veuillez créer un identifiant"); return; }
 
-  try{
-    // create client with different var name to avoid collision
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // call signUp
-    const res = await sb.auth.signUp({ email, password });
-    jsResult.textContent = pretty(res);
-    console.log('supabase-js signUp result', res);
-  }catch(err){
-    jsResult.textContent = 'Exception: ' + String(err) + '\nSee console.';
-    console.error(err);
+  const accessKey = generateKey();
+
+  const { data, error } = await supabase.from("instances").insert([{ identifiant, access_key: accessKey }]);
+
+  if(error) {
+    console.error(error);
+    document.getElementById("generatedKey").innerText = "Erreur : " + error.message;
+  } else {
+    document.getElementById("generatedKey").innerText = `Inscription réussie ! Votre clé d'accès : ${accessKey}`;
   }
 });
 
-directBtn.addEventListener('click', async ()=>{
-  fetchResult.textContent = 'Running direct fetch...';
-  const SUPABASE_URL = document.getElementById('supabaseUrl').value.trim();
-  const SUPABASE_ANON_KEY = document.getElementById('anonKey').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+// Login avec identifiant + clé
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const identifiant = document.getElementById("loginIdentifiant").value.trim();
+  const key = document.getElementById("loginKey").value.trim();
 
-  if(!SUPABASE_URL || !SUPABASE_ANON_KEY){ fetchResult.textContent = 'Provide SUPABASE_URL and ANON KEY.'; return; }
+  const { data, error } = await supabase.from("instances")
+    .select("*")
+    .eq("identifiant", identifiant)
+    .eq("access_key", key)
+    .limit(1)
+    .single();
 
-  try{
-    const url = SUPABASE_URL.replace(/\/$/, '') + '/auth/v1/signup';
-    const body = { email, password };
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type':'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify(body)
-    });
-    const text = await r.text();
-    let parsed;
-    try{ parsed = JSON.parse(text); } catch(e){ parsed = text; }
-    fetchResult.textContent = 'Status: ' + r.status + ' ' + r.statusText + '\n\nHeaders:\n' + Array.from(r.headers.entries()).map(h=>h.join(': ')).join('\n') + '\n\nBody:\n' + (typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2));
-    console.log('fetch result', r, parsed);
-  }catch(err){
-    fetchResult.textContent = 'Fetch exception: ' + String(err) + '\nCheck console for CORS or network errors.';
-    console.error(err);
+  if(error || !data) {
+    document.getElementById("result").innerText = "Identifiant ou clé invalide.";
+  } else {
+    document.getElementById("result").innerText = `Connecté ! ID instance : ${data.id}`;
+    // Ici tu peux rediriger vers la page de l'agent pour cet identifiant
   }
 });
 </script>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </body>
 </html>
