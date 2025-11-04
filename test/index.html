@@ -12,13 +12,13 @@
 <button id="signupBtn">S'inscrire</button>
 <div id="result"></div>
 
-<!-- Charger Supabase JS avant tout -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<!-- Charger Supabase JS avec onload -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"
+        onload="initSupabase()"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-
-  // ⚡ Initialise Supabase correctement dans une variable globale
+function initSupabase() {
+  // Initialisation du client
   window.supabase = supabase.createClient(
     "https://qjmqmcwoprhzzevpiytx.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"
@@ -49,9 +49,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
+  // Bouton
   document.getElementById("signupBtn").addEventListener("click", testSignup);
-
-});
+}
 </script>
 
 </body>
