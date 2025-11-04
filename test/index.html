@@ -16,44 +16,37 @@
 
 <div id="result"></div>
 
-<!-- Supabase JS CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<!-- Charger Supabase JS avec onload -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"
+        onload="initSupabase()"></script>
 
 <script>
-  // ⚡ Attendre que le script Supabase soit chargé
-  window.addEventListener('DOMContentLoaded', () => {
+function initSupabase() {
+  // Initialisation après le chargement du script
+  const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY";
 
-    // Initialise le client Supabase
-    const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY";
-    
-    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+  window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    // Formulaire
-    const form = document.getElementById("signupForm");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault(); // empêche le reload de la page
+  const form = document.getElementById("signupForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); // empêche le reload
 
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-      try {
-        const { data, error } = await window.supabase.auth.signUp({ email, password });
-        const resultDiv = document.getElementById("result");
+    const { data, error } = await window.supabase.auth.signUp({ email, password });
+    const resultDiv = document.getElementById("result");
 
-        if (error) {
-          console.error(error);
-          resultDiv.innerText = "Erreur : " + error.message;
-        } else {
-          console.log(data);
-          resultDiv.innerText = "Compte créé avec succès ! Vérifiez votre mail.";
-        }
-
-      } catch(err) {
-        console.error("Erreur signup :", err);
-      }
-    });
+    if (error) {
+      console.error(error);
+      resultDiv.innerText = "Erreur : " + error.message;
+    } else {
+      console.log(data);
+      resultDiv.innerText = "Compte créé avec succès ! Vérifiez votre mail.";
+    }
   });
+}
 </script>
 
 </body>
