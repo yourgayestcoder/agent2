@@ -1,202 +1,122 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Inscription — Your New Agent</title>
-
-<!-- Supabase JS v2 (CDN) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DEBUG Supabase SignUp</title>
 <style>
-  body{font-family:Inter,system-ui,Arial,sans-serif;background:#f6f7fb;color:#1f2d3d;margin:0;padding:20px}
-  .card{max-width:520px;margin:40px auto;background:white;border-radius:10px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.06);border:1px solid #e6e9ef}
-  h1{margin:0 0 12px 0}
-  label{display:block;font-size:13px;margin-top:10px;color:#34495e}
-  input{width:100%;padding:10px;border-radius:8px;border:1px solid #cfd8e3;margin-top:6px;font-size:14px}
-  .btn{margin-top:14px;padding:10px 14px;border-radius:8px;border:0;background:#1179cf;color:white;font-weight:700;cursor:pointer}
-  .small{font-size:13px;color:#6b7b8d;margin-top:8px}
-  .error{color:#9b2c2c;margin-top:8px}
-  .info{color:#2b6aeb;margin-top:8px}
-  .muted{font-size:12px;color:#718096}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.1);border-top-color:#1179cf;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  body{font-family:Inter,system-ui,Arial,sans-serif;padding:18px;background:#f4f6fb;color:#16202a}
+  .card{max-width:900px;margin:18px auto;background:white;padding:16px;border-radius:8px;border:1px solid #e0e6ef}
+  label{display:block;margin-top:8px;font-weight:600}
+  input,textarea,select{width:100%;padding:8px;border-radius:6px;border:1px solid #cfd8e3;margin-top:6px}
+  button{margin-top:10px;padding:8px 12px;border-radius:6px;background:#1179cf;color:#fff;border:0;cursor:pointer}
+  pre{background:#0f1720;color:#dbeafe;padding:12px;border-radius:6px;overflow:auto;max-height:280px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .muted{font-size:13px;color:#6b7280}
 </style>
 </head>
 <body>
-  <div class="card" role="main">
-    <h1>Créer un compte</h1>
-    <p class="small">Entrez votre email et un mot de passe. Compte par défaut : <strong>Free</strong> (limite 2 ressources).</p>
+  <div class="card">
+    <h2>Debug Supabase SignUp</h2>
+    <p class="muted">Colle ton SUPABASE_URL (ex: https://xyz.supabase.co) et ANON KEY, puis clique "Test signup". La page affichera la réponse de Supabase (status, body) et fera aussi un fetch brut vers /auth/v1/signup.</p>
 
-    <!-- FORM -->
-    <form id="signupForm" autocomplete="on">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="email" placeholder="votre@exemple.com" required/>
+    <label>SUPABASE_URL</label>
+    <input id="supabaseUrl" placeholder="https://qjmqmcwoprhzzevpiytx.supabase.co" />
 
-      <label for="password">Mot de passe</label>
-      <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mot de passe sécurisé (min 6)" minlength="6" required/>
+    <label>SUPABASE ANON KEY</label>
+    <input id="anonKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY" />
 
-      <button id="signup" type="submit" class="btn">S'inscrire</button>
-      <span id="busy" style="display:none" class="spinner" aria-hidden="true"></span>
-    </form>
+    <div class="row">
+      <div>
+        <label>Email</label>
+        <input id="email" value="test@example.com" />
+      </div>
+      <div>
+        <label>Password</label>
+        <input id="password" value="Password123!" />
+      </div>
+    </div>
 
-    <div id="msg" class="small muted" role="status" aria-live="polite"></div>
+    <button id="testBtn">Test signUp() using supabase-js</button>
+    <button id="directBtn" style="background:#22c55e">Direct fetch to /auth/v1/signup</button>
 
-    <hr style="margin:18px 0"/>
+    <h3>supabase-js result (object)</h3>
+    <pre id="jsResult">—</pre>
 
-    <p class="muted">Après création et connexion, vous serez redirigé automatiquement vers <code>/try</code> pour gérer vos ressources (Free = max 2).</p>
-    <p class="muted">Si votre projet demande confirmation par e-mail, confirmez d'abord le mail reçu.</p>
+    <h3>Direct fetch result (/auth/v1/signup)</h3>
+    <pre id="fetchResult">—</pre>
+
+    <h3>Network hints</h3>
+    <pre id="hints">
+1) If fetch returns 401/403 — key invalid or auth endpoint rejects (check anon key).
+2) If fetch fails with CORS error in browser console but curl works — browser CORS issue.
+3) If signUp returns success but no auth.users row — maybe mail confirmation pending (check your project's Auth settings).
+4) Check Supabase Console: Auth -> Users (should list newly created user if signUp succeeded).
+    </pre>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ====== CONFIG: Remplace par tes valeurs Supabase ====== */
-const SUPABASE_URL = 'https://qjmqmcwoprhzzevpiytx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY';
-/* ====================================================== */
+const testBtn = document.getElementById('testBtn');
+const directBtn = document.getElementById('directBtn');
+const jsResult = document.getElementById('jsResult');
+const fetchResult = document.getElementById('fetchResult');
 
-/* create supabase client — use window.supabase from the CDN; avoid naming collision */
-if(!window.supabase || !window.supabase.createClient){
-  console.error('Le script supabase n’a pas chargé correctement. Vérifie la CDN.');
-  document.getElementById('msg').textContent = 'Erreur: bibliothèque Supabase non chargée. Vérifie la console.';
-}
+function pretty(obj){ try{return JSON.stringify(obj, null, 2);}catch(e){return String(obj);} }
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, detectSessionInUrl: true }
-});
+testBtn.addEventListener('click', async ()=>{
+  jsResult.textContent = 'Running...';
+  const SUPABASE_URL = document.getElementById('supabaseUrl').value.trim();
+  const SUPABASE_ANON_KEY = document.getElementById('anonKey').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
 
-/* UI refs */
-const signupForm = document.getElementById('signupForm');
-const emailEl = document.getElementById('email');
-const passEl = document.getElementById('password');
-const signupBtn = document.getElementById('signup');
-const msg = document.getElementById('msg');
-const busy = document.getElementById('busy');
-
-function setBusy(on){
-  busy.style.display = on ? 'inline-block' : 'none';
-  signupBtn.disabled = on;
-}
-
-/* helper to show messages */
-function showMsg(text, type='info'){
-  msg.className = type === 'error' ? 'error' : (type === 'info' ? 'info' : 'small muted');
-  msg.innerHTML = text;
-  console.log('[UI MSG]', type, text);
-}
-
-/* create or upsert profile (id = auth.user.id) */
-async function ensureProfileForUser(user){
-  try{
-    const payload = {
-      id: user.id,
-      email: user.email,
-      plan: 'Free',
-      created_at: new Date().toISOString()
-    };
-    // upsert profile (onConflict id)
-    const { data, error } = await supabaseClient.from('profiles').upsert(payload, { onConflict: 'id' });
-    if(error){
-      console.warn('profiles upsert error', error);
-      return { ok:false, error };
-    }
-    return { ok:true, data };
-  }catch(e){
-    console.error('ensureProfileForUser error', e);
-    return { ok:false, error: e };
-  }
-}
-
-/* Redirect helper */
-function goToTry(){
-  window.location.href = '/try';
-}
-
-/* Listen to auth changes - create profile then redirect */
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-  console.log('auth event', event, session);
-  if(session && session.user){
-    showMsg('Utilisateur connecté. Création/upsert du profil...', 'info');
-    setBusy(true);
-    const res = await ensureProfileForUser(session.user);
-    setBusy(false);
-    if(res.ok){
-      showMsg('Profil prêt — redirection...', 'info');
-      setTimeout(goToTry, 600);
-    } else {
-      showMsg('Erreur création profil (voir console).', 'error');
-      console.error(res.error);
-    }
-  } else {
-    console.log('no session or logged out');
-  }
-});
-
-/* Handle form submit => signUp */
-signupForm.addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  setBusy(true);
-  showMsg('Création du compte en cours...', 'info');
-
-  const email = emailEl.value.trim();
-  const password = passEl.value;
-  if(!email || !password){ showMsg('Email et mot de passe requis.', 'error'); setBusy(false); return; }
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY){ jsResult.textContent = 'Provide SUPABASE_URL and ANON KEY.'; return; }
 
   try{
-    // sign up
-    const { data, error } = await supabaseClient.auth.signUp(
-      { email, password },
-      // redirectTo optional; if you use email confirm, the redirect will be used after confirm
-      { redirectTo: window.location.origin + '/try' }
-    );
-
-    if(error){
-      console.error('signUp error', error);
-      showMsg('Erreur inscription : ' + (error.message || JSON.stringify(error)), 'error');
-      setBusy(false);
-      return;
-    }
-
-    console.log('signUp data', data);
-
-    // If user object is provided (auto sign-in), we can upsert profile immediately
-    if(data && data.user){
-      // upsert profile and redirect
-      showMsg('Inscription réussie. Finalisation du profil...', 'info');
-      const ensure = await ensureProfileForUser(data.user);
-      if(ensure.ok){
-        showMsg('Inscription & profil OK — redirection...', 'info');
-        setTimeout(goToTry, 600);
-      } else {
-        showMsg('Inscription OK mais erreur lors de la création du profil (voir console).', 'error');
-        console.error(ensure.error);
-      }
-    } else {
-      // likely confirmation via email required
-      showMsg('Compte créé. Si un email de confirmation est requis, confirmez-le. Vous serez redirigé après confirmation.', 'info');
-      // keep button enabled so user can retry or login after confirmation
-    }
+    // create client with different var name to avoid collision
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // call signUp
+    const res = await sb.auth.signUp({ email, password });
+    jsResult.textContent = pretty(res);
+    console.log('supabase-js signUp result', res);
   }catch(err){
-    console.error('signup catch', err);
-    showMsg('Erreur inattendue. Voir console.', 'error');
-  } finally {
-    setBusy(false);
+    jsResult.textContent = 'Exception: ' + String(err) + '\nSee console.';
+    console.error(err);
   }
 });
 
-/* auto redirect if already logged in */
-(async function autoRedirectIfLogged(){
+directBtn.addEventListener('click', async ()=>{
+  fetchResult.textContent = 'Running direct fetch...';
+  const SUPABASE_URL = document.getElementById('supabaseUrl').value.trim();
+  const SUPABASE_ANON_KEY = document.getElementById('anonKey').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY){ fetchResult.textContent = 'Provide SUPABASE_URL and ANON KEY.'; return; }
+
   try{
-    const sres = await supabaseClient.auth.getSession();
-    const session = sres && sres.data && sres.data.session;
-    if(session && session.user){
-      console.log('Already logged in, ensuring profile and redirecting');
-      setBusy(true);
-      await ensureProfileForUser(session.user);
-      setBusy(false);
-      goToTry();
-    }
-  }catch(e){ console.warn('autoRedirect check failed', e); setBusy(false); }
-})();
+    const url = SUPABASE_URL.replace(/\/$/, '') + '/auth/v1/signup';
+    const body = { email, password };
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(body)
+    });
+    const text = await r.text();
+    let parsed;
+    try{ parsed = JSON.parse(text); } catch(e){ parsed = text; }
+    fetchResult.textContent = 'Status: ' + r.status + ' ' + r.statusText + '\n\nHeaders:\n' + Array.from(r.headers.entries()).map(h=>h.join(': ')).join('\n') + '\n\nBody:\n' + (typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2));
+    console.log('fetch result', r, parsed);
+  }catch(err){
+    fetchResult.textContent = 'Fetch exception: ' + String(err) + '\nCheck console for CORS or network errors.';
+    console.error(err);
+  }
+});
 </script>
 </body>
 </html>
