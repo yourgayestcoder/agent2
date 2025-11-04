@@ -7,51 +7,53 @@
 <body>
 
 <h2>Créer un compte</h2>
-<input type="email" id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Mot de passe">
-<button id="signupBtn">S'inscrire</button>
+
+<form id="signupForm">
+  <input type="email" id="email" placeholder="Email" required autocomplete="email">
+  <input type="password" id="password" placeholder="Mot de passe" required autocomplete="new-password">
+  <button type="submit">S'inscrire</button>
+</form>
+
 <div id="result"></div>
 
-<!-- Charger Supabase JS avec onload -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"
-        onload="initSupabase()"></script>
+<!-- Supabase JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 
 <script>
-function initSupabase() {
-  // Initialisation du client
-  window.supabase = supabase.createClient(
-    "https://qjmqmcwoprhzzevpiytx.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"
-  );
+  // ⚡ Attendre que le script Supabase soit chargé
+  window.addEventListener('DOMContentLoaded', () => {
 
-  // Fonction pour créer un compte
-  async function testSignup() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    if (!email || !password) {
-      alert("Merci de remplir email et mot de passe");
-      return;
-    }
+    // Initialise le client Supabase
+    const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY";
+    
+    window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    try {
-      const { data, error } = await window.supabase.auth.signUp({ email, password });
-      const resultDiv = document.getElementById("result");
+    // Formulaire
+    const form = document.getElementById("signupForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); // empêche le reload de la page
 
-      if (error) {
-        console.error(error);
-        resultDiv.innerText = "Erreur : " + error.message;
-      } else {
-        console.log(data);
-        resultDiv.innerText = "Compte créé avec succès ! Vérifiez vos mails pour confirmation si nécessaire.";
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const { data, error } = await window.supabase.auth.signUp({ email, password });
+        const resultDiv = document.getElementById("result");
+
+        if (error) {
+          console.error(error);
+          resultDiv.innerText = "Erreur : " + error.message;
+        } else {
+          console.log(data);
+          resultDiv.innerText = "Compte créé avec succès ! Vérifiez votre mail.";
+        }
+
+      } catch(err) {
+        console.error("Erreur signup :", err);
       }
-    } catch (err) {
-      console.error("Erreur signup :", err);
-    }
-  }
-
-  // Bouton
-  document.getElementById("signupBtn").addEventListener("click", testSignup);
-}
+    });
+  });
 </script>
 
 </body>
