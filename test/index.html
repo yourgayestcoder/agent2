@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Signup Supabase</title>
+<meta charset="UTF-8">
+<title>Test Signup Supabase</title>
 </head>
 <body>
 
 <h2>Test Signup</h2>
 <button id="signupBtn">S'inscrire</button>
 
+<!-- Charger Supabase en premier -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
 <script>
-  // ⚡ Initialisation du client Supabase
+  // Initialisation du client Supabase
   const supabase = supabase.createClient(
     "https://qjmqmcwoprhzzevpiytx.supabase.co", // <-- remplace par ton URL
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"                      // <-- remplace par ta clé anon
@@ -19,17 +21,20 @@
 
   // Fonction pour créer un utilisateur
   async function testSignup() {
-    const email = "test+" + Date.now() + "@example.com"; // email unique pour test
+    const email = "test+" + Date.now() + "@example.com";
     const password = "Password123!";
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    console.log({ data, error });
-    alert(JSON.stringify({ data, error }, null, 2));
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      console.log({ data, error });
+      alert(JSON.stringify({ data, error }, null, 2));
+    } catch (err) {
+      console.error("Erreur signup:", err);
+    }
   }
 
-  // Bouton pour déclencher signup
+  // Associer la fonction au bouton
   document.getElementById("signupBtn").addEventListener("click", testSignup);
 </script>
 
 </body>
 </html>
-
