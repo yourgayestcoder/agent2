@@ -19,6 +19,8 @@
   .error{color:#9b2c2c;margin-top:8px}
   .info{color:#2b6aeb;margin-top:8px}
   .muted{font-size:12px;color:#718096}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.1);border-top-color:#1179cf;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -29,12 +31,13 @@
     <!-- FORM -->
     <form id="signupForm" autocomplete="on">
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" placeholder="votre@exemple.com" required/>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="votre@exemple.com" required/>
 
       <label for="password">Mot de passe</label>
-      <input id="password" name="password" type="password" placeholder="Mot de passe sécurisé" minlength="6" required/>
+      <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mot de passe sécurisé (min 6)" minlength="6" required/>
 
       <button id="signup" type="submit" class="btn">S'inscrire</button>
+      <span id="busy" style="display:none" class="spinner" aria-hidden="true"></span>
     </form>
 
     <div id="msg" class="small muted" role="status" aria-live="polite"></div>
@@ -49,11 +52,15 @@
 /* ====== CONFIG: Remplace par tes valeurs Supabase ====== */
 const SUPABASE_URL = 'https://qjmqmcwoprhzzevpiytx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY';
-
 /* ====================================================== */
 
-/* create supabase client — note: CDN exposes global `supabase` object */
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+/* create supabase client — use window.supabase from the CDN; avoid naming collision */
+if(!window.supabase || !window.supabase.createClient){
+  console.error('Le script supabase n’a pas chargé correctement. Vérifie la CDN.');
+  document.getElementById('msg').textContent = 'Erreur: bibliothèque Supabase non chargée. Vérifie la console.';
+}
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true }
 });
 
@@ -63,11 +70,18 @@ const emailEl = document.getElementById('email');
 const passEl = document.getElementById('password');
 const signupBtn = document.getElementById('signup');
 const msg = document.getElementById('msg');
+const busy = document.getElementById('busy');
+
+function setBusy(on){
+  busy.style.display = on ? 'inline-block' : 'none';
+  signupBtn.disabled = on;
+}
 
 /* helper to show messages */
 function showMsg(text, type='info'){
   msg.className = type === 'error' ? 'error' : (type === 'info' ? 'info' : 'small muted');
   msg.innerHTML = text;
+  console.log('[UI MSG]', type, text);
 }
 
 /* create or upsert profile (id = auth.user.id) */
@@ -79,8 +93,8 @@ async function ensureProfileForUser(user){
       plan: 'Free',
       created_at: new Date().toISOString()
     };
-    // upsert: if exists, won't duplicate
-    const { data, error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+    // upsert profile (onConflict id)
+    const { data, error } = await supabaseClient.from('profiles').upsert(payload, { onConflict: 'id' });
     if(error){
       console.warn('profiles upsert error', error);
       return { ok:false, error };
@@ -92,29 +106,27 @@ async function ensureProfileForUser(user){
   }
 }
 
-/* Redirect helper: navigate to /try after successful sign-up and profile creation */
+/* Redirect helper */
 function goToTry(){
-  // change location to /try — adapte si route différente
   window.location.href = '/try';
 }
 
-/* Listen to auth state changes: when user signs up & a session exists, create profile and redirect */
-supabase.auth.onAuthStateChange(async (event, session) => {
+/* Listen to auth changes - create profile then redirect */
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
   console.log('auth event', event, session);
   if(session && session.user){
-    // user authenticated — ensure profile exists
-    showMsg('Utilisateur connecté. Préparation du profil...', 'info');
+    showMsg('Utilisateur connecté. Création/upsert du profil...', 'info');
+    setBusy(true);
     const res = await ensureProfileForUser(session.user);
+    setBusy(false);
     if(res.ok){
       showMsg('Profil prêt — redirection...', 'info');
-      // short delay pour UX
       setTimeout(goToTry, 600);
-    }else{
-      showMsg('Erreur lors de la création du profil. Voir console.', 'error');
+    } else {
+      showMsg('Erreur création profil (voir console).', 'error');
       console.error(res.error);
     }
   } else {
-    // logged out or no session
     console.log('no session or logged out');
   }
 });
@@ -122,61 +134,68 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 /* Handle form submit => signUp */
 signupForm.addEventListener('submit', async (ev) => {
   ev.preventDefault();
-  signupBtn.disabled = true;
+  setBusy(true);
   showMsg('Création du compte en cours...', 'info');
 
   const email = emailEl.value.trim();
   const password = passEl.value;
-  if(!email || !password){ showMsg('Email et mot de passe requis.', 'error'); signupBtn.disabled = false; return; }
+  if(!email || !password){ showMsg('Email et mot de passe requis.', 'error'); setBusy(false); return; }
 
   try{
-    // signUp: returns { data, error }
-    const { data, error } = await supabase.auth.signUp({ email, password }, { redirectTo: window.location.origin + '/try' });
+    // sign up
+    const { data, error } = await supabaseClient.auth.signUp(
+      { email, password },
+      // redirectTo optional; if you use email confirm, the redirect will be used after confirm
+      { redirectTo: window.location.origin + '/try' }
+    );
+
     if(error){
-      // signUp can return an error (weak password, duplicate, etc.)
       console.error('signUp error', error);
-      showMsg('Erreur inscription : ' + (error.message || error), 'error');
-      signupBtn.disabled = false;
+      showMsg('Erreur inscription : ' + (error.message || JSON.stringify(error)), 'error');
+      setBusy(false);
       return;
     }
 
-    // data.user might be null if email confirmation flow is active: user must confirm before session exists
-    // We rely on onAuthStateChange listener above to create profile + redirect when session becomes available.
     console.log('signUp data', data);
 
+    // If user object is provided (auto sign-in), we can upsert profile immediately
     if(data && data.user){
-      // If user is auto-signed-in, onAuthStateChange will also run — but we can proactively ensure profile here
+      // upsert profile and redirect
+      showMsg('Inscription réussie. Finalisation du profil...', 'info');
       const ensure = await ensureProfileForUser(data.user);
       if(ensure.ok){
-        showMsg('Inscription réussie. Redirection...', 'info');
+        showMsg('Inscription & profil OK — redirection...', 'info');
         setTimeout(goToTry, 600);
       } else {
-        showMsg('Inscription réussie, mais erreur profil. Voir console.', 'error');
+        showMsg('Inscription OK mais erreur lors de la création du profil (voir console).', 'error');
+        console.error(ensure.error);
       }
     } else {
-      // likely confirmation by email required — inform user
-      showMsg('Compte créé. Vérifiez votre email pour confirmer (si demandé). Une fois confirmé, vous serez redirigé vers /try.', 'info');
+      // likely confirmation via email required
+      showMsg('Compte créé. Si un email de confirmation est requis, confirmez-le. Vous serez redirigé après confirmation.', 'info');
+      // keep button enabled so user can retry or login after confirmation
     }
   }catch(err){
     console.error('signup catch', err);
     showMsg('Erreur inattendue. Voir console.', 'error');
   } finally {
-    signupBtn.disabled = false;
+    setBusy(false);
   }
 });
 
-/* OPTIONAL: convenience — if already logged in, redirect directly */
+/* auto redirect if already logged in */
 (async function autoRedirectIfLogged(){
   try{
-    const sres = await supabase.auth.getSession();
+    const sres = await supabaseClient.auth.getSession();
     const session = sres && sres.data && sres.data.session;
     if(session && session.user){
-      // session exists -> ensure profile then redirect
       console.log('Already logged in, ensuring profile and redirecting');
+      setBusy(true);
       await ensureProfileForUser(session.user);
+      setBusy(false);
       goToTry();
     }
-  }catch(e){ console.warn('autoRedirect check failed', e); }
+  }catch(e){ console.warn('autoRedirect check failed', e); setBusy(false); }
 })();
 </script>
 </body>
