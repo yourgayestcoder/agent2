@@ -12,19 +12,18 @@
 <button id="signupBtn">S'inscrire</button>
 <div id="result"></div>
 
-<!-- Supabase JS -->
+<!-- Supabase JS doit être chargé avant l'initialisation -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
-  // Initialise le client Supabase
-  const supabase = supabase.createClient(
+  
+  // ⚡ Initialise supabase correctement dans une variable globale
+  window.supabaseClient = supabase.createClient(
     "https://qjmqmcwoprhzzevpiytx.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"
   );
 
-  // Fonction d'inscription
   async function testSignup() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -33,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await window.supabaseClient.auth.signUp({ email, password });
     
     const resultDiv = document.getElementById("result");
     if(error){
@@ -45,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // Bouton
   document.getElementById("signupBtn").addEventListener("click", testSignup);
 
 });
