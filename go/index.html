@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Inscription — Your New Agent</title>
 
-<!-- Supabase JS (v2) from CDN -->
+<!-- Supabase JS v2 (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -18,167 +18,166 @@
   .small{font-size:13px;color:#6b7b8d;margin-top:8px}
   .error{color:#9b2c2c;margin-top:8px}
   .info{color:#2b6aeb;margin-top:8px}
+  .muted{font-size:12px;color:#718096}
 </style>
 </head>
 <body>
-  <div class="card">
+  <div class="card" role="main">
     <h1>Créer un compte</h1>
     <p class="small">Entrez votre email et un mot de passe. Compte par défaut : <strong>Free</strong> (limite 2 ressources).</p>
 
-    <label for="email">Email</label>
-    <input id="email" type="email" placeholder="votre@exemple.com"/>
+    <!-- FORM -->
+    <form id="signupForm" autocomplete="on">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="votre@exemple.com" required/>
 
-    <label for="password">Mot de passe</label>
-    <input id="password" type="password" placeholder="Mot de passe sécurisé"/>
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" placeholder="Mot de passe sécurisé" minlength="6" required/>
 
-    <button id="signup" class="btn">S'inscrire</button>
+      <button id="signup" type="submit" class="btn">S'inscrire</button>
+    </form>
 
-    <div id="msg" class="small"></div>
-
-    <hr style="margin:18px 0"/>
-
-    <h2 style="font-size:16px;margin:0 0 8px 0">Tester ajout ressources (après connexion)</h2>
-    <p class="small">Après inscription/connexion, tu peux ajouter une ressource (test client) ; côté client on bloque si Free a déjà 2 ressources.</p>
-
-    <label for="res-title">Titre ressource</label>
-    <input id="res-title" type="text" placeholder="Titre..."/>
-    <label for="res-content">Contenu (texte)</label>
-    <input id="res-content" type="text" placeholder="Contenu..."/>
-    <button id="add-resource" class="btn" style="background:#2ecc71">Ajouter ressource</button>
-    <div id="res-msg" class="small"></div>
+    <div id="msg" class="small muted" role="status" aria-live="polite"></div>
 
     <hr style="margin:18px 0"/>
-    <div class="small">Si tu veux : <a href="/" target="_self">Retour app</a></div>
+
+    <p class="muted">Après création et connexion, vous serez redirigé automatiquement vers <code>/try</code> pour gérer vos ressources (Free = max 2).</p>
+    <p class="muted">Si votre projet demande confirmation par e-mail, confirmez d'abord le mail reçu.</p>
   </div>
 
 <script>
-/*
-  Remplace ces 2 constantes par tes valeurs Supabase (proj url et anon key).
-  ⚠️ Ne mets PAS la service_role_key ici — utiliser uniquement la anon/public key côté client.
-*/
+/* ====== CONFIG: Remplace par tes valeurs Supabase ====== */
 const SUPABASE_URL = 'https://qjmqmcwoprhzzevpiytx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY';
 
-// create client
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+/* ====================================================== */
+
+/* create supabase client — note: CDN exposes global `supabase` object */
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true, detectSessionInUrl: true }
 });
 
-// éléments UI
+/* UI refs */
+const signupForm = document.getElementById('signupForm');
 const emailEl = document.getElementById('email');
 const passEl = document.getElementById('password');
 const signupBtn = document.getElementById('signup');
 const msg = document.getElementById('msg');
 
-const resTitle = document.getElementById('res-title');
-const resContent = document.getElementById('res-content');
-const addResBtn = document.getElementById('add-resource');
-const resMsg = document.getElementById('res-msg');
-
-async function showMessage(node, text, isError=false){
-  node.textContent = text;
-  node.className = isError ? 'error' : 'info';
-  setTimeout(()=>{ node.textContent=''; node.className='small'; }, 6000);
+/* helper to show messages */
+function showMsg(text, type='info'){
+  msg.className = type === 'error' ? 'error' : (type === 'info' ? 'info' : 'small muted');
+  msg.innerHTML = text;
 }
 
-/* Signup flow:
-   - supabase.auth.signUp({email,password})
-   - on success: create a profile row in table `profiles` with id = auth user id and plan = 'Free'
-     (we create the profiles row from the client because we want a public profile; alternatively use DB trigger).
-*/
-signupBtn.addEventListener('click', async ()=>{
+/* create or upsert profile (id = auth.user.id) */
+async function ensureProfileForUser(user){
+  try{
+    const payload = {
+      id: user.id,
+      email: user.email,
+      plan: 'Free',
+      created_at: new Date().toISOString()
+    };
+    // upsert: if exists, won't duplicate
+    const { data, error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+    if(error){
+      console.warn('profiles upsert error', error);
+      return { ok:false, error };
+    }
+    return { ok:true, data };
+  }catch(e){
+    console.error('ensureProfileForUser error', e);
+    return { ok:false, error: e };
+  }
+}
+
+/* Redirect helper: navigate to /try after successful sign-up and profile creation */
+function goToTry(){
+  // change location to /try — adapte si route différente
+  window.location.href = '/try';
+}
+
+/* Listen to auth state changes: when user signs up & a session exists, create profile and redirect */
+supabase.auth.onAuthStateChange(async (event, session) => {
+  console.log('auth event', event, session);
+  if(session && session.user){
+    // user authenticated — ensure profile exists
+    showMsg('Utilisateur connecté. Préparation du profil...', 'info');
+    const res = await ensureProfileForUser(session.user);
+    if(res.ok){
+      showMsg('Profil prêt — redirection...', 'info');
+      // short delay pour UX
+      setTimeout(goToTry, 600);
+    }else{
+      showMsg('Erreur lors de la création du profil. Voir console.', 'error');
+      console.error(res.error);
+    }
+  } else {
+    // logged out or no session
+    console.log('no session or logged out');
+  }
+});
+
+/* Handle form submit => signUp */
+signupForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  signupBtn.disabled = true;
+  showMsg('Création du compte en cours...', 'info');
+
   const email = emailEl.value.trim();
   const password = passEl.value;
-  if(!email || !password){ showMessage(msg,'Email et mot de passe requis',true); return; }
+  if(!email || !password){ showMsg('Email et mot de passe requis.', 'error'); signupBtn.disabled = false; return; }
 
-  signupBtn.disabled = true;
-  showMessage(msg, 'Création du compte...');
+  try{
+    // signUp: returns { data, error }
+    const { data, error } = await supabase.auth.signUp({ email, password }, { redirectTo: window.location.origin + '/try' });
+    if(error){
+      // signUp can return an error (weak password, duplicate, etc.)
+      console.error('signUp error', error);
+      showMsg('Erreur inscription : ' + (error.message || error), 'error');
+      signupBtn.disabled = false;
+      return;
+    }
 
-  // create user
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if(error){
-    showMessage(msg, 'Erreur inscription : ' + (error.message || error), true);
+    // data.user might be null if email confirmation flow is active: user must confirm before session exists
+    // We rely on onAuthStateChange listener above to create profile + redirect when session becomes available.
+    console.log('signUp data', data);
+
+    if(data && data.user){
+      // If user is auto-signed-in, onAuthStateChange will also run — but we can proactively ensure profile here
+      const ensure = await ensureProfileForUser(data.user);
+      if(ensure.ok){
+        showMsg('Inscription réussie. Redirection...', 'info');
+        setTimeout(goToTry, 600);
+      } else {
+        showMsg('Inscription réussie, mais erreur profil. Voir console.', 'error');
+      }
+    } else {
+      // likely confirmation by email required — inform user
+      showMsg('Compte créé. Vérifiez votre email pour confirmer (si demandé). Une fois confirmé, vous serez redirigé vers /try.', 'info');
+    }
+  }catch(err){
+    console.error('signup catch', err);
+    showMsg('Erreur inattendue. Voir console.', 'error');
+  } finally {
     signupBtn.disabled = false;
-    return;
   }
-
-  // data.user may be null if confirmation required, but data is returned
-  // We'll attempt to create profiles row AFTER sign-up; better: listen auth.onAuthStateChange in production.
-  showMessage(msg, 'Compte créé. Vérifiez votre email si nécessaire. Création du profil...');
-
-  // wait for session/user (in many setups the user will be in session immediately)
-  const session = supabase.auth.getSession ? (await supabase.auth.getSession()).data.session : null;
-  // fallback: data.user
-  const userId = (data && data.user && data.user.id) || (session && session.user && session.user.id);
-
-  if(!userId){
-    // fallback: create profile later (on confirmation) - we inform user
-    showMessage(msg, 'Profil non créé automatiquement (vérifier confirmation email). Vous pourrez créer votre profil après validation.', true);
-    signupBtn.disabled = false;
-    return;
-  }
-
-  // create profile in `profiles` table with default plan='Free'
-  const { error: pErr } = await supabase.from('profiles').insert([{ id: userId, email: email, plan: 'Free', created_at: new Date() }]);
-  if(pErr){
-    // profile creation could fail if already exists — not fatal
-    console.warn('profile create error', pErr);
-    showMessage(msg, 'Inscription OK — profil peut être créé plus tard. (' + (pErr.message || '') + ')', true);
-  } else {
-    showMessage(msg, 'Compte & profil prêts — plan Free appliqué.');
-  }
-  signupBtn.disabled = false;
 });
 
-/* Simple helper: check user's resource count (server is authoritative with RLS but we add client check) */
-async function getResourceCountForUser(){
-  const { data: sessionData } = await supabase.auth.getSession().catch(()=>({data:null}));
-  const user = sessionData && sessionData.session && sessionData.session.user;
-  if(!user) return {count:0, ok:false};
-  const userId = user.id;
-  const { data, error } = await supabase.from('resources').select('id',{count:'exact'}).eq('user_id', userId);
-  if(error){ console.warn('count error',error); return {count:0, ok:false}; }
-  return {count: data ? data.length : 0, ok:true};
-}
-
-/* Add resource button: client-side guard + insert to resources table (RLS must allow) */
-addResBtn.addEventListener('click', async ()=>{
-  addResBtn.disabled = true;
-  resMsg.textContent = 'Vérification...';
-  const sessRes = await supabase.auth.getSession(); 
-  const session = sessRes && sessRes.data && sessRes.data.session;
-  if(!session || !session.user){
-    showMessage(resMsg, 'Vous devez être connecté pour ajouter une ressource', true);
-    addResBtn.disabled = false;
-    return;
-  }
-  const userId = session.user.id;
-
-  // client-side limit check
-  const { data: countData, error: cErr } = await supabase.from('resources').select('id',{count:'exact'}).eq('user_id', userId);
-  const currentCount = cErr ? 0 : (countData ? countData.length : 0);
-  // fetch plan (optional)
-  const { data: profileRows } = await supabase.from('profiles').select('plan').eq('id', userId).maybeSingle();
-  const plan = profileRows && profileRows.plan ? profileRows.plan : 'Free';
-
-  if(plan === 'Free' && currentCount >= 2){
-    showMessage(resMsg, 'Limite: votre compte Free est limité à 2 ressources. Passez en plan supérieur.', true);
-    addResBtn.disabled = false;
-    return;
-  }
-
-  // insert resource
-  const title = (document.getElementById('res-title').value || '').trim();
-  const rawText = (document.getElementById('res-content').value || '').trim();
-  if(!title || !rawText){ showMessage(resMsg, 'Remplissez titre et contenu', true); addResBtn.disabled=false; return; }
-
-  const { data, error } = await supabase.from('resources').insert([{ user_id: userId, title, raw_text: rawText, category: 'Other', type: 'note' }]);
-
-  if(error){ showMessage(resMsg, 'Erreur ajout ressource: ' + (error.message || ''), true); console.error(error); }
-  else { showMessage(resMsg, 'Ressource ajoutée'); document.getElementById('res-title').value=''; document.getElementById('res-content').value=''; }
-
-  addResBtn.disabled = false;
-});
+/* OPTIONAL: convenience — if already logged in, redirect directly */
+(async function autoRedirectIfLogged(){
+  try{
+    const sres = await supabase.auth.getSession();
+    const session = sres && sres.data && sres.data.session;
+    if(session && session.user){
+      // session exists -> ensure profile then redirect
+      console.log('Already logged in, ensuring profile and redirecting');
+      await ensureProfileForUser(session.user);
+      goToTry();
+    }
+  }catch(e){ console.warn('autoRedirect check failed', e); }
+})();
 </script>
 </body>
 </html>
