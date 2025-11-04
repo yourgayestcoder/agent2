@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Registration / Login</title>
+<title>Inscription / Login Instance</title>
 </head>
 <body>
 
-<h2>Inscription</h2>
+<h2>Créer un identifiant</h2>
 <input type="text" id="newIdentifiant" placeholder="Créez votre identifiant">
 <button id="registerBtn">S'inscrire</button>
 <p id="generatedKey"></p>
@@ -18,61 +18,71 @@
 
 <div id="result"></div>
 
+<!-- Supabase JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"
+        onload="initSupabase()"></script>
+
 <script>
-const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"; // Remplace par ta clé
+function initSupabase() {
+  // Initialisation après le chargement du script
+  const supabaseUrl = "https://qjmqmcwoprhzzevpiytx.supabase.co";
+  const supabaseAnonKey = "YOUR_ANON_KEY"; // remplace par ta clé anon
 
-const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+  window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-// Génère une clé aléatoire
-function generateKey(length = 18) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let key = "";
-  for (let i = 0; i < length; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
+  // Génère une clé aléatoire
+  function generateKey(length = 18) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let key = "";
+    for (let i = 0; i < length; i++) {
+      key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return key;
   }
-  return key;
+
+  // ----- Inscription -----
+  document.getElementById("registerBtn").addEventListener("click", async () => {
+    const identifiant = document.getElementById("newIdentifiant").value.trim();
+    if(!identifiant) { alert("Veuillez créer un identifiant"); return; }
+
+    const accessKey = generateKey();
+
+    const { data, error } = await supabase
+      .from("instances")
+      .insert([{ identifiant, access_key: accessKey }]);
+
+    if(error) {
+      console.error(error);
+      document.getElementById("generatedKey").innerText = "Erreur : " + error.message;
+    } else {
+      document.getElementById("generatedKey").innerText =
+        `Inscription réussie ! Votre clé d'accès : ${accessKey}`;
+    }
+  });
+
+  // ----- Login -----
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const identifiant = document.getElementById("loginIdentifiant").value.trim();
+    const key = document.getElementById("loginKey").value.trim();
+
+    const { data, error } = await supabase
+      .from("instances")
+      .select("*")
+      .eq("identifiant", identifiant)
+      .eq("access_key", key)
+      .limit(1)
+      .single();
+
+    if(error || !data) {
+      document.getElementById("result").innerText = "Identifiant ou clé invalide.";
+    } else {
+      document.getElementById("result").innerText =
+        `Connecté ! Instance ID : ${data.id} | Identifiant : ${data.identifiant}`;
+      // Ici tu peux rediriger vers /try et passer identifiant+clé
+    }
+  });
 }
-
-// Enregistrement d'une instance
-document.getElementById("registerBtn").addEventListener("click", async () => {
-  const identifiant = document.getElementById("newIdentifiant").value.trim();
-  if(!identifiant) { alert("Veuillez créer un identifiant"); return; }
-
-  const accessKey = generateKey();
-
-  const { data, error } = await supabase.from("instances").insert([{ identifiant, access_key: accessKey }]);
-
-  if(error) {
-    console.error(error);
-    document.getElementById("generatedKey").innerText = "Erreur : " + error.message;
-  } else {
-    document.getElementById("generatedKey").innerText = `Inscription réussie ! Votre clé d'accès : ${accessKey}`;
-  }
-});
-
-// Login avec identifiant + clé
-document.getElementById("loginBtn").addEventListener("click", async () => {
-  const identifiant = document.getElementById("loginIdentifiant").value.trim();
-  const key = document.getElementById("loginKey").value.trim();
-
-  const { data, error } = await supabase.from("instances")
-    .select("*")
-    .eq("identifiant", identifiant)
-    .eq("access_key", key)
-    .limit(1)
-    .single();
-
-  if(error || !data) {
-    document.getElementById("result").innerText = "Identifiant ou clé invalide.";
-  } else {
-    document.getElementById("result").innerText = `Connecté ! ID instance : ${data.id}`;
-    // Ici tu peux rediriger vers la page de l'agent pour cet identifiant
-  }
-});
 </script>
 
-<!-- Supabase JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </body>
 </html>
