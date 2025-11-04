@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inscription — Your New Agent</title>
+
+<!-- Supabase JS (v2) from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  body{font-family:Inter,system-ui,Arial,sans-serif;background:#f6f7fb;color:#1f2d3d;margin:0;padding:20px}
+  .card{max-width:520px;margin:40px auto;background:white;border-radius:10px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.06);border:1px solid #e6e9ef}
+  h1{margin:0 0 12px 0}
+  label{display:block;font-size:13px;margin-top:10px;color:#34495e}
+  input{width:100%;padding:10px;border-radius:8px;border:1px solid #cfd8e3;margin-top:6px;font-size:14px}
+  .btn{margin-top:14px;padding:10px 14px;border-radius:8px;border:0;background:#1179cf;color:white;font-weight:700;cursor:pointer}
+  .small{font-size:13px;color:#6b7b8d;margin-top:8px}
+  .error{color:#9b2c2c;margin-top:8px}
+  .info{color:#2b6aeb;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Créer un compte</h1>
+    <p class="small">Entrez votre email et un mot de passe. Compte par défaut : <strong>Free</strong> (limite 2 ressources).</p>
+
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="votre@exemple.com"/>
+
+    <label for="password">Mot de passe</label>
+    <input id="password" type="password" placeholder="Mot de passe sécurisé"/>
+
+    <button id="signup" class="btn">S'inscrire</button>
+
+    <div id="msg" class="small"></div>
+
+    <hr style="margin:18px 0"/>
+
+    <h2 style="font-size:16px;margin:0 0 8px 0">Tester ajout ressources (après connexion)</h2>
+    <p class="small">Après inscription/connexion, tu peux ajouter une ressource (test client) ; côté client on bloque si Free a déjà 2 ressources.</p>
+
+    <label for="res-title">Titre ressource</label>
+    <input id="res-title" type="text" placeholder="Titre..."/>
+    <label for="res-content">Contenu (texte)</label>
+    <input id="res-content" type="text" placeholder="Contenu..."/>
+    <button id="add-resource" class="btn" style="background:#2ecc71">Ajouter ressource</button>
+    <div id="res-msg" class="small"></div>
+
+    <hr style="margin:18px 0"/>
+    <div class="small">Si tu veux : <a href="/" target="_self">Retour app</a></div>
+  </div>
+
+<script>
+/*
+  Remplace ces 2 constantes par tes valeurs Supabase (proj url et anon key).
+  ⚠️ Ne mets PAS la service_role_key ici — utiliser uniquement la anon/public key côté client.
+*/
+const SUPABASE_URL = 'https://qjmqmcwoprhzzevpiytx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY';
+
+// create client
+const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, detectSessionInUrl: true }
+});
+
+// éléments UI
+const emailEl = document.getElementById('email');
+const passEl = document.getElementById('password');
+const signupBtn = document.getElementById('signup');
+const msg = document.getElementById('msg');
+
+const resTitle = document.getElementById('res-title');
+const resContent = document.getElementById('res-content');
+const addResBtn = document.getElementById('add-resource');
+const resMsg = document.getElementById('res-msg');
+
+async function showMessage(node, text, isError=false){
+  node.textContent = text;
+  node.className = isError ? 'error' : 'info';
+  setTimeout(()=>{ node.textContent=''; node.className='small'; }, 6000);
+}
+
+/* Signup flow:
+   - supabase.auth.signUp({email,password})
+   - on success: create a profile row in table `profiles` with id = auth user id and plan = 'Free'
+     (we create the profiles row from the client because we want a public profile; alternatively use DB trigger).
+*/
+signupBtn.addEventListener('click', async ()=>{
+  const email = emailEl.value.trim();
+  const password = passEl.value;
+  if(!email || !password){ showMessage(msg,'Email et mot de passe requis',true); return; }
+
+  signupBtn.disabled = true;
+  showMessage(msg, 'Création du compte...');
+
+  // create user
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if(error){
+    showMessage(msg, 'Erreur inscription : ' + (error.message || error), true);
+    signupBtn.disabled = false;
+    return;
+  }
+
+  // data.user may be null if confirmation required, but data is returned
+  // We'll attempt to create profiles row AFTER sign-up; better: listen auth.onAuthStateChange in production.
+  showMessage(msg, 'Compte créé. Vérifiez votre email si nécessaire. Création du profil...');
+
+  // wait for session/user (in many setups the user will be in session immediately)
+  const session = supabase.auth.getSession ? (await supabase.auth.getSession()).data.session : null;
+  // fallback: data.user
+  const userId = (data && data.user && data.user.id) || (session && session.user && session.user.id);
+
+  if(!userId){
+    // fallback: create profile later (on confirmation) - we inform user
+    showMessage(msg, 'Profil non créé automatiquement (vérifier confirmation email). Vous pourrez créer votre profil après validation.', true);
+    signupBtn.disabled = false;
+    return;
+  }
+
+  // create profile in `profiles` table with default plan='Free'
+  const { error: pErr } = await supabase.from('profiles').insert([{ id: userId, email: email, plan: 'Free', created_at: new Date() }]);
+  if(pErr){
+    // profile creation could fail if already exists — not fatal
+    console.warn('profile create error', pErr);
+    showMessage(msg, 'Inscription OK — profil peut être créé plus tard. (' + (pErr.message || '') + ')', true);
+  } else {
+    showMessage(msg, 'Compte & profil prêts — plan Free appliqué.');
+  }
+  signupBtn.disabled = false;
+});
+
+/* Simple helper: check user's resource count (server is authoritative with RLS but we add client check) */
+async function getResourceCountForUser(){
+  const { data: sessionData } = await supabase.auth.getSession().catch(()=>({data:null}));
+  const user = sessionData && sessionData.session && sessionData.session.user;
+  if(!user) return {count:0, ok:false};
+  const userId = user.id;
+  const { data, error } = await supabase.from('resources').select('id',{count:'exact'}).eq('user_id', userId);
+  if(error){ console.warn('count error',error); return {count:0, ok:false}; }
+  return {count: data ? data.length : 0, ok:true};
+}
+
+/* Add resource button: client-side guard + insert to resources table (RLS must allow) */
+addResBtn.addEventListener('click', async ()=>{
+  addResBtn.disabled = true;
+  resMsg.textContent = 'Vérification...';
+  const sessRes = await supabase.auth.getSession(); 
+  const session = sessRes && sessRes.data && sessRes.data.session;
+  if(!session || !session.user){
+    showMessage(resMsg, 'Vous devez être connecté pour ajouter une ressource', true);
+    addResBtn.disabled = false;
+    return;
+  }
+  const userId = session.user.id;
+
+  // client-side limit check
+  const { data: countData, error: cErr } = await supabase.from('resources').select('id',{count:'exact'}).eq('user_id', userId);
+  const currentCount = cErr ? 0 : (countData ? countData.length : 0);
+  // fetch plan (optional)
+  const { data: profileRows } = await supabase.from('profiles').select('plan').eq('id', userId).maybeSingle();
+  const plan = profileRows && profileRows.plan ? profileRows.plan : 'Free';
+
+  if(plan === 'Free' && currentCount >= 2){
+    showMessage(resMsg, 'Limite: votre compte Free est limité à 2 ressources. Passez en plan supérieur.', true);
+    addResBtn.disabled = false;
+    return;
+  }
+
+  // insert resource
+  const title = (document.getElementById('res-title').value || '').trim();
+  const rawText = (document.getElementById('res-content').value || '').trim();
+  if(!title || !rawText){ showMessage(resMsg, 'Remplissez titre et contenu', true); addResBtn.disabled=false; return; }
+
+  const { data, error } = await supabase.from('resources').insert([{ user_id: userId, title, raw_text: rawText, category: 'Other', type: 'note' }]);
+
+  if(error){ showMessage(resMsg, 'Erreur ajout ressource: ' + (error.message || ''), true); console.error(error); }
+  else { showMessage(resMsg, 'Ressource ajoutée'); document.getElementById('res-title').value=''; document.getElementById('res-content').value=''; }
+
+  addResBtn.disabled = false;
+});
+</script>
+</body>
+</html>
