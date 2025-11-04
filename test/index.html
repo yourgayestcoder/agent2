@@ -1,0 +1,17 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabase = supabaseJs.createClient(
+  "https://qjmqmcwoprhzzevpiytx.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqbXFtY3dvcHJoenpldnBpeXR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjk0ODksImV4cCI6MjA3Nzg0NTQ4OX0.fx7-ije0ghFr5fZoeFB6DtQBxcYov1jbvshRQ5TtiQY"
+);
+
+async function testSignup(){
+  const { data, error } = await supabase.auth.signUp({
+    email: "test+1@example.com",
+    password: "Password123!"
+  });
+  console.log({ data, error });
+}
+
+testSignup();
+</script>
